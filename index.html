@@ -1,0 +1,874 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>旅行資金計算系統</title>
+  <style>
+    :root{
+      --bg: #fff0f6;
+      --panel: rgba(255,255,255,.75);
+      --card: rgba(255,182,204,.18);
+      --card2: rgba(255,182,204,.10);
+      --border: rgba(255,105,180,.25);
+      --text: #2b1230;
+      --muted:#6a3a6e;
+      --accent:#ff4fa3;
+      --accent2:#ff7bbf;
+      --good:#21c77a;
+      --warn:#f7b84b;
+      --bad:#ff4b4b;
+      --shadow: 0 12px 30px rgba(255, 79, 163, .18);
+      --radius: 18px;
+    }
+    *{ box-sizing: border-box; }
+    body{
+      margin:0;
+      font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto,
+                   "Noto Sans TC", "PingFang TC", "Microsoft JhengHei", Arial, sans-serif;
+      color: var(--text);
+      background:
+        radial-gradient(900px 450px at 10% 0%, rgba(255,79,163,.25), transparent 55%),
+        radial-gradient(900px 450px at 95% 10%, rgba(255,123,191,.25), transparent 55%),
+        linear-gradient(180deg, #fff0f6 0%, #ffe6f2 35%, #fff0f6 100%);
+      min-height:100vh;
+    }
+
+    header{
+      position:sticky;
+      top:0;
+      z-index:10;
+      backdrop-filter: blur(10px);
+      background: linear-gradient(to bottom, rgba(255,240,246,.88), rgba(255,240,246,.60));
+      border-bottom: 1px solid rgba(255,105,180,.22);
+    }
+
+    .wrap{
+      max-width: 1080px;
+      margin: 0 auto;
+      padding: 18px 16px;
+    }
+
+    .title-row{
+      display:flex;
+      align-items:flex-start;
+      justify-content:space-between;
+      gap:12px;
+      flex-wrap:wrap;
+    }
+
+    h1{
+      margin:0;
+      font-size: 22px;
+      letter-spacing:.2px;
+    }
+    .sub{
+      margin:6px 0 0 0;
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.35;
+    }
+
+    .grid{
+      display:grid;
+      grid-template-columns: 1.1fr .9fr;
+      gap:14px;
+      align-items:start;
+      margin-top: 14px;
+    }
+    @media (max-width: 900px){
+      .grid{ grid-template-columns: 1fr; }
+    }
+
+    .panel{
+      background: var(--panel);
+      border: 1px solid rgba(255,105,180,.22);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 14px;
+    }
+
+    .section-title{
+      display:flex;
+      align-items:center;
+      gap:10px;
+      margin-bottom: 10px;
+    }
+    .section-title .tag{
+      font-weight:800;
+      color: #a0124b;
+      background: rgba(255,79,163,.14);
+      border: 1px solid rgba(255,79,163,.25);
+      padding: 7px 10px;
+      border-radius: 999px;
+      font-size: 12px;
+      letter-spacing:.3px;
+      white-space:nowrap;
+    }
+    .section-title .hint{
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    label{
+      display:block;
+      font-size: 12px;
+      color: var(--muted);
+      margin-top: 10px;
+      margin-bottom: 6px;
+      font-weight: 700;
+    }
+
+    input[type="text"], input[type="number"], select{
+      width:100%;
+      border-radius: 14px;
+      border: 1px solid rgba(255,105,180,.28);
+      background: rgba(255,255,255,.65);
+      padding: 11px 12px;
+      outline: none;
+      color: var(--text);
+    }
+    input[type="number"]{ -moz-appearance: textfield; }
+    input::-webkit-outer-spin-button,
+    input::-webkit-inner-spin-button{ -webkit-appearance: none; margin: 0; }
+
+    .row{
+      display:grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+    @media (max-width: 560px){
+      .row{ grid-template-columns: 1fr; }
+    }
+
+    .btnbar{
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+      margin-top: 14px;
+      align-items:center;
+    }
+
+    button{
+      border-radius: 14px;
+      border: 1px solid rgba(255,105,180,.30);
+      background: rgba(255,255,255,.7);
+      color: var(--text);
+      font-weight: 800;
+      padding: 10px 12px;
+      cursor:pointer;
+      transition: transform .05s ease, background .15s ease, border-color .15s ease;
+    }
+    button:active{ transform: translateY(1px); }
+    button:hover{
+      background: rgba(255,255,255,.88);
+      border-color: rgba(255,105,180,.45);
+    }
+    .primary{
+      background: linear-gradient(180deg, rgba(255,79,163,.20), rgba(255,79,163,.12));
+      border-color: rgba(255,79,163,.45);
+    }
+    .danger{
+      background: rgba(255,75,75,.10);
+      border-color: rgba(255,75,75,.35);
+      color:#7a0c0c;
+    }
+
+    .filters{
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+      align-items:flex-end;
+    }
+    .filters .field{
+      min-width: 170px;
+      flex: 0 0 auto;
+    }
+
+    .stats{
+      display:grid;
+      grid-template-columns: 1fr 1fr;
+      gap:10px;
+      margin-top: 12px;
+    }
+    @media (max-width: 560px){
+      .stats{ grid-template-columns: 1fr; }
+    }
+    .stat{
+      border: 1px dashed rgba(255,105,180,.35);
+      border-radius: 16px;
+      padding: 12px;
+      background: rgba(255,255,255,.55);
+    }
+    .stat .k{
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 800;
+    }
+    .stat .v{
+      margin-top: 6px;
+      font-size: 18px;
+      font-weight: 900;
+      letter-spacing:.2px;
+    }
+    .stat .v small{
+      font-size: 12px;
+      font-weight: 900;
+      color: var(--muted);
+    }
+
+    .list-head{
+      margin-top: 16px;
+      display:flex;
+      justify-content:space-between;
+      align-items:flex-end;
+      gap:12px;
+      flex-wrap:wrap;
+    }
+
+    .searchbar{
+      display:flex;
+      gap:10px;
+      align-items:center;
+      flex-wrap:wrap;
+    }
+    .searchbar input{
+      min-width: 240px;
+    }
+
+    .countline{
+      color: var(--muted);
+      font-size: 13px;
+      font-weight: 700;
+    }
+
+    .list{
+      display:flex;
+      flex-direction:column;
+      gap:12px;
+      margin-top: 12px;
+      padding-bottom: 22px;
+    }
+
+    .card{
+      border-radius: var(--radius);
+      background: linear-gradient(180deg, rgba(255,255,255,.72), rgba(255,255,255,.55));
+      border: 1px solid rgba(255,105,180,.22);
+      padding: 12px;
+      box-shadow: 0 10px 22px rgba(255,105,180,.10);
+    }
+
+    .card-top{
+      display:flex;
+      justify-content:space-between;
+      align-items:flex-start;
+      gap: 12px;
+      flex-wrap:wrap;
+    }
+
+    .dest{
+      margin:0;
+      font-weight: 1000;
+      font-size: 16px;
+      letter-spacing:.2px;
+    }
+    .meta{
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 800;
+      margin-top: 6px;
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+    }
+
+    .badges{
+      display:flex;
+      gap:8px;
+      flex-wrap:wrap;
+      justify-content:flex-end;
+      align-items:center;
+    }
+    .badge{
+      font-size: 12px;
+      font-weight: 900;
+      padding: 6px 10px;
+      border-radius: 999px;
+      border: 1px solid rgba(255,105,180,.25);
+      background: rgba(255,79,163,.10);
+      color: #7b1248;
+      white-space:nowrap;
+    }
+    .badge.done{
+      background: rgba(247,184,75,.14);
+      border-color: rgba(247,184,75,.35);
+      color: #6a460c;
+    }
+
+    .card-body{
+      margin-top: 10px;
+      display:grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+    @media (max-width: 700px){
+      .card-body{ grid-template-columns: 1fr; }
+    }
+
+    .kv{
+      background: rgba(255,182,204,.14);
+      border: 1px solid rgba(255,105,180,.18);
+      border-radius: 16px;
+      padding: 10px;
+    }
+    .kv .k{
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 900;
+    }
+    .kv .v{
+      margin-top: 6px;
+      font-size: 15px;
+      font-weight: 1000;
+    }
+
+    .card-bottom{
+      margin-top: 10px;
+      padding-top: 10px;
+      border-top: 1px dashed rgba(255,105,180,.28);
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      gap:10px;
+      flex-wrap:wrap;
+    }
+
+    .actions{
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+      align-items:center;
+      justify-content:flex-end;
+    }
+
+    .small-btn{
+      padding: 9px 10px;
+      border-radius: 14px;
+      font-size: 13px;
+    }
+
+    .muted{
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 700;
+    }
+
+    .empty{
+      border-radius: var(--radius);
+      border: 1px dashed rgba(255,105,180,.35);
+      background: rgba(255,255,255,.45);
+      padding: 22px 14px;
+      text-align:center;
+      color: var(--muted);
+      font-weight: 800;
+    }
+    .empty b{ color: #7b1248; }
+
+    .currency-row{
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+      align-items:flex-end;
+      margin-top: 8px;
+    }
+    .currency-row .field{
+      min-width: 150px;
+      flex: 0 0 auto;
+    }
+
+    .footer-note{
+      margin-top: 10px;
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 700;
+      line-height: 1.45;
+    }
+  </style>
+</head>
+
+<body>
+  <header>
+    <div class="wrap">
+      <div class="title-row">
+        <div>
+          <h1>旅行資金計算系統</h1>
+          <p class="sub">自動計算總預算、儲存每次旅行記錄、支援狀態切換與搜尋/篩選。版面走粉紅系風格💗</p>
+        </div>
+      </div>
+
+      <div class="grid">
+        <!-- Left: Create -->
+        <div class="panel">
+          <div class="section-title">
+            <div class="tag">新增旅行資金記錄</div>
+            <div class="hint">destination/days/dailyCost 必填；extraCost 可選</div>
+          </div>
+
+          <label for="destination">destination（必填）</label>
+          <input id="destination" type="text" placeholder="例如：台北 / 東京 / 高雄海邊..." maxlength="80" />
+
+          <div class="row">
+            <div>
+              <label for="days">days（必填）</label>
+              <input id="days" type="number" min="1" step="1" placeholder="例如：3" />
+            </div>
+            <div>
+              <label for="dailyCost">dailyCost（必填，每日消費）</label>
+              <input id="dailyCost" type="number" min="0" step="1" placeholder="例如：2500" />
+            </div>
+          </div>
+
+          <div class="row">
+            <div>
+              <label for="extraCost">extraCost（可選，額外花費）</label>
+              <input id="extraCost" type="number" min="0" step="1" placeholder="例如：800（可留空視為 0）" />
+            </div>
+            <div class="currency-row">
+              <div class="field">
+                <label for="currency" style="margin-top:0;">顯示幣別（可選）</label>
+                <select id="currency">
+                  <option value="TWD" selected>TWD</option>
+                  <option value="JPY">JPY</option>
+                  <option value="USD">USD</option>
+                  <option value="EUR">EUR</option>
+                  <option value="HKD">HKD</option>
+                  <option value="其他">其他</option>
+                </select>
+              </div>
+            </div>
+          </div>
+
+          <div class="btnbar">
+            <button class="primary" id="btnCreate" type="button">新增並計算 totalBudget</button>
+            <button class="danger small-btn" id="btnClearAll" type="button" title="清除所有記錄（含 localStorage）">清除全部</button>
+          </div>
+
+          <div class="footer-note">
+            totalBudget 會自動計算為：\( days \times dailyCost \) + \( extraCost \)。
+            <br/>你可以在列表卡片中：切換 status（active/done）與刪除單筆；也可搜尋 destination。
+          </div>
+        </div>
+
+        <!-- Right: Filters / Stats -->
+        <div class="panel">
+          <div class="section-title">
+            <div class="tag">篩選與總覽</div>
+            <div class="hint">配合 status 與搜尋更好用</div>
+          </div>
+
+          <div class="filters">
+            <div class="field">
+              <label for="statusFilter" style="margin-top:0;">status filter</label>
+              <select id="statusFilter">
+                <option value="all" selected>全部</option>
+                <option value="active">active</option>
+                <option value="done">done</option>
+              </select>
+            </div>
+
+            <div class="field">
+              <label for="sortMode" style="margin-top:0;">排序</label>
+              <select id="sortMode">
+                <option value="createdDesc" selected>建立時間（新→舊）</option>
+                <option value="createdAsc">建立時間（舊→新）</option>
+                <option value="budgetDesc">totalBudget（高→低）</option>
+                <option value="budgetAsc">totalBudget（低→高）</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="stats">
+            <div class="stat">
+              <div class="k">顯示結果筆數</div>
+              <div class="v" id="statCount">0</div>
+            </div>
+            <div class="stat">
+              <div class="k">顯示結果總預算</div>
+              <div class="v" id="statTotal">0 <small>（依顯示幣別）</small></div>
+            </div>
+          </div>
+
+          <div class="footer-note" style="margin-top:12px;">
+            小技巧：如果你輸入新記錄，會即時新增在列表上方（除非你改排序）。
+          </div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <div class="wrap">
+      <div class="list-head">
+        <div class="searchbar">
+          <div style="flex:1 1 280px;">
+            <label for="search" style="margin-top:0;">搜尋 destination</label>
+            <input id="search" type="text" placeholder="輸入目的地關鍵字，例如：東京/台北" />
+          </div>
+        </div>
+        <div class="countline" id="countLine">共有 0 筆記錄</div>
+      </div>
+
+      <div id="list" class="list"></div>
+      <div class="footer-note" style="text-align:center;">
+        資料存於 localStorage：`records`。不會因刷新而消失。
+      </div>
+    </div>
+  </main>
+
+  <script>
+    const STORAGE_KEY = "records";
+
+    // -----------------------------
+    // Helpers
+    // -----------------------------
+    function safeTrim(s){ return (s ?? "").toString().trim(); }
+
+    function toNumberOrNull(v){
+      if (v === "" || v === null || v === undefined) return null;
+      const n = Number(v);
+      return Number.isFinite(n) ? n : null;
+    }
+
+    function clampNonNegative(n){
+      const x = Number(n);
+      if (!Number.isFinite(x)) return 0;
+      return x < 0 ? 0 : x;
+    }
+
+    function formatISO(iso){
+      try{
+        const d = new Date(iso);
+        const pad = (n)=>String(n).padStart(2,"0");
+        return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}`;
+      }catch{
+        return iso;
+      }
+    }
+
+    function escapeHTML(str){
+      return String(str ?? "")
+        .replaceAll("&","&amp;")
+        .replaceAll("<","&lt;")
+        .replaceAll(">","&gt;")
+        .replaceAll('"',"&quot;")
+        .replaceAll("'","&#039;");
+    }
+
+    function calcTotalBudget(days, dailyCost, extraCost){
+      const d = clampNonNegative(days);
+      const dc = clampNonNegative(dailyCost);
+      const ec = clampNonNegative(extraCost ?? 0);
+      return (d * dc) + ec;
+    }
+
+    function getCurrencyLabel(){
+      const sel = document.getElementById("currency");
+      const v = sel ? sel.value : "TWD";
+      if (v === "其他") return "";
+      return v;
+    }
+
+    // -----------------------------
+    // Required function 1: createRecord(formData)
+    // -----------------------------
+    function createRecord(formData){
+      const destination = safeTrim(formData.destination);
+      const days = toNumberOrNull(formData.days);
+      const dailyCost = toNumberOrNull(formData.dailyCost);
+      const extraCost = toNumberOrNull(formData.extraCost);
+
+      const record = {
+        id: (crypto.randomUUID ? crypto.randomUUID() : String(Date.now()) + "_" + Math.random().toString(16).slice(2)),
+        createdAt: new Date().toISOString(),
+        status: "active",
+        destination,
+        days,
+        dailyCost,
+        extraCost: extraCost === null ? 0 : clampNonNegative(extraCost),
+        totalBudget: calcTotalBudget(days, dailyCost, extraCost === null ? 0 : extraCost)
+      };
+      return record;
+    }
+
+    // -----------------------------
+    // Required function 2: saveData(record)
+    // -----------------------------
+    function saveData(record){
+      const list = loadData();
+      list.push(record);
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(list));
+      return list;
+    }
+
+    // -----------------------------
+    // Required function 3: loadData()
+    // -----------------------------
+    function loadData(){
+      const raw = localStorage.getItem(STORAGE_KEY);
+      if (!raw) return [];
+      try{
+        const parsed = JSON.parse(raw);
+        return Array.isArray(parsed) ? parsed : [];
+      }catch{
+        return [];
+      }
+    }
+
+    // -----------------------------
+    // Required function 4: updateRecord(id, changes)
+    // -----------------------------
+    function updateRecord(id, changes){
+      const list = loadData();
+      const idx = list.findIndex(r => r && r.id === id);
+      if (idx === -1) return false;
+
+      list[idx] = { ...list[idx], ...changes };
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(list));
+      return true;
+    }
+
+    // -----------------------------
+    // Required function 5: renderList(recordsToShow)
+    // -----------------------------
+    function renderList(recordsToShow){
+      const listEl = document.getElementById("list");
+      const statCount = document.getElementById("statCount");
+      const statTotal = document.getElementById("statTotal");
+      const countLine = document.getElementById("countLine");
+
+      const all = loadData();
+      countLine.textContent = `共有 ${all.length} 筆記錄`;
+
+      const currency = getCurrencyLabel();
+      const totalSum = recordsToShow.reduce((acc, r) => acc + Number(r.totalBudget ?? 0), 0);
+
+      statCount.textContent = recordsToShow.length;
+      statTotal.innerHTML = `${Math.round(totalSum).toLocaleString()} ${currency ? `<small>（${currency}）</small>` : "<small></small>"}`;
+
+      if (!recordsToShow.length){
+        listEl.innerHTML = `
+          <div class="empty">
+            目前沒有符合條件嘅旅行資金記錄。<br/>
+            <b>快新增一筆吧！</b>
+          </div>
+        `;
+        return;
+      }
+
+      const sorted = recordsToShow;
+
+      listEl.innerHTML = sorted.map(r => {
+        const statusLabel = r.status === "done" ? "done" : "active";
+        const doneClass = r.status === "done" ? "done" : "";
+        const toggleText = r.status === "done" ? "恢復 active" : "標記 done";
+
+        const extraCostShown = (r.extraCost ?? 0);
+        const days = r.days ?? 0;
+        const dailyCost = r.dailyCost ?? 0;
+        const totalBudget = r.totalBudget ?? 0;
+
+        const currency = getCurrencyLabel();
+
+        return `
+          <article class="card" data-id="${escapeHTML(r.id)}">
+            <div class="card-top">
+              <div>
+                <h3 class="dest">${escapeHTML(r.destination)}</h3>
+                <div class="meta">
+                  <span>createdAt：${escapeHTML(formatISO(r.createdAt))}</span>
+                  <span>id：${escapeHTML(r.id).slice(0,10)}...</span>
+                </div>
+              </div>
+              <div class="badges">
+                <span class="badge ${doneClass}">status：${statusLabel}</span>
+              </div>
+            </div>
+
+            <div class="card-body">
+              <div class="kv">
+                <div class="k">每日/天數</div>
+                <div class="v">
+                  ${Number(days).toLocaleString()} 天 × ${Number(dailyCost).toLocaleString()}
+                  ${currency ? currency : ""}
+                </div>
+              </div>
+
+              <div class="kv">
+                <div class="k">總預算 totalBudget</div>
+                <div class="v">
+                  ${Number(totalBudget).toLocaleString()} ${currency ? currency : ""}
+                </div>
+              </div>
+
+              <div class="kv">
+                <div class="k">額外花費 extraCost</div>
+                <div class="v">
+                  ${Number(extraCostShown).toLocaleString()} ${currency ? currency : ""}
+                </div>
+              </div>
+
+              <div class="kv">
+                <div class="k">計算公式</div>
+                <div class="v">
+                  days×dailyCost + extraCost
+                </div>
+              </div>
+            </div>
+
+            <div class="card-bottom">
+              <div class="muted">tip：你可以切換狀態或刪除此筆記錄</div>
+              <div class="actions">
+                <button class="small-btn primary" type="button" data-action="toggle" data-id="${escapeHTML(r.id)}">${escapeHTML(toggleText)}</button>
+                <button class="small-btn" type="button" data-action="recalc" data-id="${escapeHTML(r.id)}" title="重新計算 totalBudget（例如手動修正資料時）">重新計算</button>
+                <button class="small-btn danger" type="button" data-action="delete" data-id="${escapeHTML(r.id)}">刪除</button>
+              </div>
+            </div>
+          </article>
+        `;
+      }).join("");
+    }
+
+    // -----------------------------
+    // App logic (filters/sort/search)
+    // -----------------------------
+    function getCurrentFilters(){
+      const statusFilter = document.getElementById("statusFilter").value; // all/active/done
+      const search = safeTrim(document.getElementById("search").value).toLowerCase();
+      const sortMode = document.getElementById("sortMode").value; // createdDesc/createdAsc/budgetDesc/budgetAsc
+      return { statusFilter, search, sortMode };
+    }
+
+    function computeRecordsToShow(){
+      const { statusFilter, search, sortMode } = getCurrentFilters();
+      const all = loadData();
+
+      let filtered = all.filter(r => {
+        const matchStatus = statusFilter === "all" ? true : (r.status === statusFilter);
+        const dest = (r.destination ?? "").toLowerCase();
+        const matchSearch = search ? dest.includes(search) : true;
+        return matchStatus && matchSearch;
+      });
+
+      // sort
+      filtered.sort((a, b) => {
+        if (sortMode === "createdDesc") return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+        if (sortMode === "createdAsc") return new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime();
+        if (sortMode === "budgetDesc") return Number(b.totalBudget ?? 0) - Number(a.totalBudget ?? 0);
+        if (sortMode === "budgetAsc") return Number(a.totalBudget ?? 0) - Number(b.totalBudget ?? 0);
+        return 0;
+      });
+
+      return filtered;
+    }
+
+    function refresh(){
+      const toShow = computeRecordsToShow();
+      renderList(toShow);
+    }
+
+    function handleCreate(){
+      const destination = safeTrim(document.getElementById("destination").value);
+      const days = toNumberOrNull(document.getElementById("days").value);
+      const dailyCost = toNumberOrNull(document.getElementById("dailyCost").value);
+      const extraCost = toNumberOrNull(document.getElementById("extraCost").value);
+
+      // basic validation
+      if (!destination){
+        document.getElementById("destination").focus();
+        return;
+      }
+      if (days === null || !Number.isFinite(days) || days <= 0){
+        document.getElementById("days").focus();
+        return;
+      }
+      if (dailyCost === null || !Number.isFinite(dailyCost) || dailyCost < 0){
+        document.getElementById("dailyCost").focus();
+        return;
+      }
+
+      const record = createRecord({
+        destination,
+        days,
+        dailyCost,
+        extraCost
+      });
+
+      saveData(record);
+
+      // reset form (destination 保留更方便？這裡清空)
+      document.getElementById("destination").value = "";
+      document.getElementById("days").value = "";
+      document.getElementById("dailyCost").value = "";
+      document.getElementById("extraCost").value = "";
+
+      refresh();
+    }
+
+    function handleClearAll(){
+      const ok = confirm("確定要清除所有旅行資金記錄嗎？此操作會連同 localStorage 一併刪除。");
+      if (!ok) return;
+      localStorage.removeItem(STORAGE_KEY);
+      refresh();
+    }
+
+    function handleListAction(e){
+      const btn = e.target.closest("button[data-action]");
+      if (!btn) return;
+
+      const id = btn.getAttribute("data-id");
+      const action = btn.getAttribute("data-action");
+      if (!id || !action) return;
+
+      const all = loadData();
+      const rec = all.find(r => r.id === id);
+      if (!rec) return;
+
+      if (action === "toggle"){
+        const next = rec.status === "done" ? "active" : "done";
+        updateRecord(id, { status: next });
+        refresh();
+        return;
+      }
+
+      if (action === "delete"){
+        const ok = confirm("確定刪除這筆記錄嗎？");
+        if (!ok) return;
+        const nextList = all.filter(r => r.id !== id);
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(nextList));
+        refresh();
+        return;
+      }
+
+      if (action === "recalc"){
+        const totalBudget = calcTotalBudget(rec.days, rec.dailyCost, rec.extraCost ?? 0);
+        updateRecord(id, { totalBudget });
+        refresh();
+        return;
+      }
+    }
+
+    // Events
+    document.getElementById("btnCreate").addEventListener("click", handleCreate);
+    document.getElementById("btnClearAll").addEventListener("click", handleClearAll);
+
+    document.getElementById("statusFilter").addEventListener("change", refresh);
+    document.getElementById("sortMode").addEventListener("change", refresh);
+    document.getElementById("search").addEventListener("input", refresh);
+
+    document.getElementById("list").addEventListener("click", handleListAction);
+
+    // Initial
+    refresh();
+  </script>
+</body>
+</html>

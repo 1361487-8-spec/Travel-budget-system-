@@ -1,0 +1,162 @@
+// ==================== Apps Script 后端代码 (修正版) ====================
+
+const SHEET_NAME = "Sheet1";  // 请确认你的 Google Sheet 页签名
+
+function doGet(e) {
+  try {
+    const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(SHEET_NAME);
+    
+    // 如果 Sheet 是空的，先建立 headers
+    if (sheet.getLastRow() === 0) {
+      const headers = ["id", "createdAt", "status", "destination", "days", "dailyCost", "extraCost", "totalBudget"];
+      sheet.appendRow(headers);
+    }
+    
+    const data = sheet.getDataRange().getValues();
+    const headers = data[0];
+    const records = [];
+    
+    for (let i = 1; i < data.length; i++) {
+      const row = data[i];
+      const record = {};
+      for (let j = 0; j < headers.length; j++) {
+        const header = headers[j];
+        // 统一用英文小写 key
+        if (header === "id") record.id = row[j];
+        else if (header === "createdAt") record.createdAt = row[j];
+        else if (header === "status") record.status = row[j];
+        else if (header === "destination") record.destination = row[j];
+        else if (header === "days") record.days = row[j];
+        else if (header === "dailyCost") record.dailyCost = row[j];
+        else if (header === "extraCost") record.extraCost = row[j];
+        else if (header === "totalBudget") record.totalBudget = row[j];
+        else record[header] = row[j];
+      }
+      records.push(record);
+    }
+    
+    return ContentService.createTextOutput(JSON.stringify({
+      ok: true,
+      records: records
+    })).setMimeType(ContentService.MimeType.JSON);
+    
+  } catch(e) {
+    return ContentService.createTextOutput(JSON.stringify({
+      ok: false,
+      error: e.toString()
+    })).setMimeType(ContentService.MimeType.JSON);
+  }
+}
+
+function doPost(e) {
+  try {
+    // 解析 POST 过来的数据
+    let data;
+    if (typeof e.postData.contents === "string") {
+      data = JSON.parse(e.postData.contents);
+    } else {
+      data = e.postData.contents;
+    }
+    
+    const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(SHEET_NAME);
+    
+    // 确保 headers 存在
+    if (sheet.getLastRow() === 0) {
+      const headers = ["id", "createdAt", "status", "destination", "days", "dailyCost", "extraCost", "totalBudget"];
+      sheet.appendRow(headers);
+    }
+    
+    const action = data.action;
+    const record = data.record;
+    
+    if (action === "create") {
+      // 新增记录
+      const row = [
+        record.id || "",
+        record.createdAt || new Date().toISOString(),
+        record.status || "active",
+        record.destination || "",
+        record.days || 0,
+        record.dailyCost || 0,
+        record.extraCost || 0,
+        record.totalBudget || 0
+      ];
+      sheet.appendRow(row);
+      
+      return ContentService.createTextOutput(JSON.stringify({
+        ok: true,
+        message: "record created"
+      })).setMimeType(ContentService.MimeType.JSON);
+      
+    } else if (action === "update") {
+      // 更新记录
+      const id = record.id;
+      const dataRange = sheet.getDataRange().getValues();
+      const headers = dataRange[0];
+      
+      // 找 id 在哪一列
+      let idCol = -1;
+      for (let i = 0; i < headers.length; i++) {
+        if (headers[i] === "id") idCol = i;
+      }
+      if (idCol === -1) throw new Error("找不到 id 栏位");
+      
+      // 找 status 在哪一列
+      let statusCol = -1;
+      for (let i = 0; i < headers.length; i++) {
+        if (headers[i] === "status") statusCol = i;
+      }
+      if (statusCol === -1) throw new Error("找不到 status 栏位");
+      
+      // 寻找并更新
+      for (let i = 1; i < dataRange.length; i++) {
+        if (dataRange[i][idCol] === id) {
+          if (record.status) {
+            sheet.getRange(i+1, statusCol+1).setValue(record.status);
+          }
+          break;
+        }
+      }
+      
+      return ContentService.createTextOutput(JSON.stringify({
+        ok: true,
+        message: "record updated"
+      })).setMimeType(ContentService.MimeType.JSON);
+      
+    } else if (action === "delete") {
+      // 删除记录
+      const id = record.id;
+      const dataRange = sheet.getDataRange().getValues();
+      const headers = dataRange[0];
+      
+      let idCol = -1;
+      for (let i = 0; i < headers.length; i++) {
+        if (headers[i] === "id") idCol = i;
+      }
+      if (idCol === -1) throw new Error("找不到 id 栏位");
+      
+      for (let i = 1; i < dataRange.length; i++) {
+        if (dataRange[i][idCol] === id) {
+          sheet.deleteRow(i+1);
+          break;
+        }
+      }
+      
+      return ContentService.createTextOutput(JSON.stringify({
+        ok: true,
+        message: "record deleted"
+      })).setMimeType(ContentService.MimeType.JSON);
+    }
+    
+    return ContentService.createTextOutput(JSON.stringify({
+      ok: false,
+      error: "未知 action: " + action
+    })).setMimeType(ContentService.MimeType.JSON);
+    
+  } catch(e) {
+    return ContentService.createTextOutput(JSON.stringify({
+      ok: false,
+      error: e.toString()
+    })).setMimeType(ContentService.MimeType.JSON);
+  }
+}

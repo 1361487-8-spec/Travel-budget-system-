@@ -97,4 +97,588 @@ gap: 12px;
 .panel-title span {
 background: rgba(255, 107, 166, 0.15);
 padding: 6px 12px;
-border-radius: 40px
+border-radius: 40px;
+font-size: 0.8rem;
+color: var(--accent-dark);
+font-weight: 600;
+}
+label {
+font-size: 0.8rem;
+font-weight: 700;
+color: var(--text-soft);
+letter-spacing: 0.3px;
+margin-bottom: 6px;
+display: block;
+}
+input, select {
+width: 100%;
+padding: 12px 14px;
+border-radius: var(--radius-element);
+border: 1.5px solid var(--border-light);
+background: white;
+font-size: 0.9rem;
+transition: 0.2s;
+outline: none;
+color: var(--text-main);
+}
+input:focus, select:focus {
+border-color: var(--accent);
+box-shadow: 0 0 0 3px rgba(255, 107, 166, 0.2);
+}
+.row-2col {
+display: grid;
+grid-template-columns: 1fr 1fr;
+gap: 14px;
+margin-top: 6px;
+}
+.btn-group {
+display: flex;
+gap: 12px;
+margin-top: 22px;
+flex-wrap: wrap;
+}
+.btn {
+border: none;
+background: white;
+padding: 10px 18px;
+border-radius: 40px;
+font-weight: 700;
+font-size: 0.85rem;
+cursor: pointer;
+transition: 0.15s linear;
+border: 1px solid var(--border-light);
+color: var(--text-main);
+}
+.btn-primary {
+background: #ffecf2;
+border-color: var(--accent);
+color: var(--accent-dark);
+box-shadow: 0 2px 5px rgba(255, 105, 180, 0.1);
+}
+.btn-primary:hover {
+background: #ffe2ed;
+transform: translateY(-2px);
+}
+.btn-danger {
+background: #fff2f0;
+border-color: #ffb3b3;
+color: #bc4a4a;
+}
+.btn-danger:hover {
+background: #ffe0de;
+}
+.filter-bar {
+display: flex;
+flex-wrap: wrap;
+gap: 16px;
+margin-bottom: 24px;
+align-items: flex-end;
+}
+.filter-item {
+flex: 1;
+min-width: 150px;
+}
+.stat-cards {
+display: grid;
+grid-template-columns: repeat(2, 1fr);
+gap: 12px;
+margin-top: 20px;
+}
+.stat-card {
+background: rgba(255,255,235,0.6);
+border-radius: 24px;
+padding: 14px;
+text-align: center;
+backdrop-filter: blur(2px);
+}
+.stat-label {
+font-size: 0.7rem;
+text-transform: uppercase;
+font-weight: 800;
+color: var(--text-soft);
+}
+.stat-number {
+font-size: 1.6rem;
+font-weight: 800;
+color: var(--accent-dark);
+line-height: 1.2;
+}
+.list-header {
+display: flex;
+justify-content: space-between;
+align-items: baseline;
+flex-wrap: wrap;
+gap: 12px;
+margin: 20px 0 16px 0;
+}
+.search-box {
+min-width: 220px;
+flex: 2;
+}
+.record-count {
+background: rgba(255,107,166,0.1);
+padding: 6px 14px;
+border-radius: 50px;
+font-weight: 600;
+font-size: 0.8rem;
+}
+.cards-list {
+display: flex;
+flex-direction: column;
+gap: 18px;
+}
+.trip-card {
+background: var(--card-bg);
+backdrop-filter: blur(4px);
+border-radius: 28px;
+border: 1px solid var(--border-light);
+padding: 18px;
+transition: all 0.2s;
+box-shadow: 0 6px 14px rgba(0, 0, 0, 0.02);
+}
+.trip-card:hover {
+transform: translateY(-3px);
+background: rgba(255, 255, 255, 0.85);
+border-color: rgba(255, 140, 190, 0.4);
+}
+.card-header {
+display: flex;
+flex-wrap: wrap;
+justify-content: space-between;
+align-items: center;
+gap: 12px;
+margin-bottom: 14px;
+}
+.dest-name {
+font-size: 1.35rem;
+font-weight: 800;
+letter-spacing: -0.2px;
+}
+.status-badge {
+font-size: 0.7rem;
+font-weight: 800;
+padding: 6px 14px;
+border-radius: 60px;
+background: var(--badge-active);
+color: #b1446e;
+}
+.status-badge.done {
+background: var(--badge-done);
+color: var(--green-done);
+}
+.info-grid {
+display: grid;
+grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+gap: 12px;
+margin: 16px 0 12px;
+}
+.info-item {
+background: rgba(255, 240, 245, 0.5);
+border-radius: 20px;
+padding: 10px 12px;
+}
+.info-label {
+font-size: 0.7rem;
+font-weight: 700;
+color: var(--text-soft);
+}
+.info-value {
+font-weight: 800;
+font-size: 1rem;
+margin-top: 4px;
+}
+.card-actions {
+display: flex;
+gap: 10px;
+justify-content: flex-end;
+margin-top: 10px;
+}
+.small-btn {
+background: transparent;
+border: 1px solid var(--border-light);
+padding: 6px 12px;
+border-radius: 32px;
+font-size: 0.7rem;
+font-weight: 700;
+cursor: pointer;
+transition: 0.1s;
+}
+.empty-state {
+text-align: center;
+padding: 48px 20px;
+background: rgba(255,255,240,0.5);
+border-radius: 48px;
+color: var(--text-soft);
+}
+.footer-tip {
+text-align: center;
+margin-top: 32px;
+font-size: 0.7rem;
+color: var(--text-soft);
+border-top: 1px dashed var(--border-light);
+padding-top: 20px;
+}
+@media (max-width: 640px) {
+.info-grid {
+grid-template-columns: 1fr;
+}
+.dest-name {
+font-size: 1.2rem;
+}
+.card-panel {
+padding: 1rem;
+}
+}
+</style>
+</head>
+<body>
+<div class="container">
+<div class="hero">
+<h1>✈️ 旅行资金计算系统</h1>
+<p class="sub">自动预算 · 智能筛选 · 旅程管理 — 你的粉红旅伴 💗</p>
+</div>
+<div class="dashboard-grid">
+<div class="card-panel">
+<div class="panel-title">
+📝 新增旅行资金记录 <span>必填项带 *</span>
+</div>
+<label>目的地 *</label>
+<input type="text" id="destinationInput" placeholder="例：京都 / 巴黎 / 垦丁" maxlength="70" />
+<div class="row-2col">
+<div>
+<label>天数 *</label>
+<input type="number" id="daysInput" min="1" placeholder="天数" />
+</div>
+<div>
+<label>每日预算 *</label>
+<input type="number" id="dailyCostInput" min="0" placeholder="每日花费 (当地币)" />
+</div>
+</div>
+<div class="row-2col">
+<div>
+<label>额外花费 (可选)</label>
+<input type="number" id="extraCostInput" min="0" placeholder="额外支出" value="0" />
+</div>
+<div>
+<label>币别显示</label>
+<select id="currencySelect">
+<option value="TWD">TWD 新台币</option>
+<option value="JPY">JPY 日圆</option>
+<option value="USD">USD 美金</option>
+<option value="EUR">EUR 欧元</option>
+<option value="HKD">HKD 港币</option>
+</select>
+</div>
+</div>
+<div class="btn-group">
+<button class="btn btn-primary" id="createBtn">✨ 新增并计算总预算</button>
+<button class="btn btn-danger" id="clearAllBtn">🗑 清除所有记录</button>
+</div>
+<div style="font-size: 0.7rem; margin-top: 14px; color:#a06b7c;">总预算 = 天数 × 每日预算 + 额外花费</div>
+</div>
+<div class="card-panel">
+<div class="panel-title">
+🔍 筛选与总览 <span>即时更新</span>
+</div>
+<div class="filter-bar">
+<div class="filter-item">
+<label>状态筛选</label>
+<select id="statusFilter">
+<option value="all">全部 (active + done)</option>
+<option value="active">进行中 active</option>
+<option value="done">已完成 done</option>
+</select>
+</div>
+<div class="filter-item">
+<label>排序方式</label>
+<select id="sortSelect">
+<option value="createdDesc">📅 最新优先</option>
+<option value="createdAsc">📅 最旧优先</option>
+<option value="budgetDesc">💰 预算高 → 低</option>
+<option value="budgetAsc">💰 预算低 → 高</option>
+</select>
+</div>
+</div>
+<div class="stat-cards">
+<div class="stat-card"><div class="stat-label">显示笔数</div><div class="stat-number" id="displayCount">0</div></div>
+<div class="stat-card"><div class="stat-label">显示总预算</div><div class="stat-number" id="displayTotalBudget">0</div></div>
+<div class="stat-card"><div class="stat-label">active 旅程</div><div class="stat-number" id="activeCount">0</div></div>
+<div class="stat-card"><div class="stat-label">done 旅程</div><div class="stat-number" id="doneCount">0</div></div>
+</div>
+<div class="footer-tip" style="margin-top: 12px; border: none;">💡 根据筛选&排序动态变化</div>
+</div>
+</div>
+<div class="list-header">
+<div class="search-box">
+<input type="text" id="searchInput" placeholder="🔎 输入目的地关键字进行筛选..." autocomplete="off" />
+</div>
+<div class="record-count" id="totalRecordCount">📌 总记录数: 0</div>
+</div>
+<div id="tripListContainer" class="cards-list">
+<div class="empty-state">✨ 暂无旅行资金记录，请新增一笔 ✨</div>
+</div>
+<div class="footer-tip">
+💾 资料储存在 Google Sheet & 本地快取 · 完全前端验证 · 支援搜索/筛选/排序/统计
+</div>
+</div>
+<script>
+// ------------------------------ 后端连接配置 ---------------------------------
+const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyClxroFO9WqHCPMMPS4Gq4x6iTgM8st6hIM9BrkrcUInca1Zk547Y_HNB9Y2FticeZ/exec";
+
+// ------------------------------ 存储KEY 及 辅助函数 ---------------------------------
+const STORAGE_KEY = "travel_records_system";
+const clamp = (val) => (isNaN(val) || val < 0 ? 0 : Number(val));
+const toNumber = (val) => {
+const n = parseFloat(val);
+return isNaN(n) ? null : n;
+};
+function computeTotalBudget(days, dailyCost, extraCost) {
+return clamp(days) * clamp(dailyCost) + clamp(extraCost);
+}
+
+// ------------------------------ Google Sheet 同步核心 --------------------------
+async function syncToSheet(payload) {
+try {
+await fetch(APPS_SCRIPT_URL, {
+method: "POST",
+headers: { "Content-Type": "text/plain" },
+body: JSON.stringify(payload)
+});
+} catch (e) {
+console.error("同步到 Google Sheet 失败:", e);
+}
+}
+
+async function fetchRecordsFromSheet() {
+// 使用 AbortController 防止 fetch 無期限卡死
+const controller = new AbortController();
+const timeoutId = setTimeout(() => controller.abort(), 4000); 
+try {
+const response = await fetch(APPS_SCRIPT_URL, { signal: controller.signal });
+clearTimeout(timeoutId);
+const data = await response.json();
+if (data && data.ok && Array.isArray(data.records)) {
+return data.records.map(normalizeRecord);
+}
+throw new Error("格式错误");
+} catch (err) {
+clearTimeout(timeoutId);
+throw err;
+}
+}
+
+function normalizeRecord(record) {
+return {
+id: String(record["流水号 / ID"] || ""),
+createdAt: String(record["建立时间"] || ""),
+status: String(record["状态"] || "active"),
+destination: String(record["目的地"] || ""),
+days: Number(record["天数"] || 0),
+dailyCost: Number(record["每日预算"] || 0),
+extraCost: Number(record["额外花费"] || 0),
+totalBudget: Number(record["总预算"] || 0)
+};
+}
+
+function buildRecordFromInput() {
+const destination = document.getElementById("destinationInput").value.trim();
+const daysRaw = document.getElementById("daysInput").value;
+const dailyRaw = document.getElementById("dailyCostInput").value;
+const extraRaw = document.getElementById("extraCostInput").value;
+if (destination === "") {
+alert("❌ 目的地 为必填字段！");
+return null;
+}
+const days = toNumber(daysRaw);
+const dailyCost = toNumber(dailyRaw);
+if (days === null || days <= 0) {
+alert("❌ 天数必须为正整数");
+return null;
+}
+if (dailyCost === null || dailyCost < 0) {
+alert("❌ 每日预算不能为负数");
+return null;
+}
+const extraCost = extraRaw === "" ? 0 : (toNumber(extraRaw) || 0);
+return {
+id: crypto.randomUUID ? crypto.randomUUID() : Date.now() + "-" + Math.random().toString(36),
+createdAt: new Date().toISOString(),
+status: "active",
+destination: destination,
+days: days,
+dailyCost: dailyCost,
+extraCost: clamp(extraCost),
+totalBudget: computeTotalBudget(days, dailyCost, extraCost)
+};
+}
+function loadRecords() {
+const raw = localStorage.getItem(STORAGE_KEY);
+if (!raw) return [];
+try { return JSON.parse(raw) || []; } catch(e) { return []; }
+}
+function saveAllRecords(records) {
+localStorage.setItem(STORAGE_KEY, JSON.stringify(records));
+}
+function addNewRecord(record) {
+if (!record) return false;
+const records = loadRecords();
+records.unshift(record);
+saveAllRecords(records);
+return true;
+}
+function updateRecordById(id, updatedFields) {
+const records = loadRecords();
+const idx = records.findIndex(r => r.id === id);
+if (idx === -1) return false;
+records[idx] = { ...records[idx], ...updatedFields };
+saveAllRecords(records);
+return true;
+}
+function deleteRecordById(id) {
+let records = loadRecords();
+const newList = records.filter(r => r.id !== id);
+saveAllRecords(newList);
+return true;
+}
+function clearAllRecords() {
+if (confirm("⚠️ 确认删除所有旅行资金记录？")) {
+localStorage.removeItem(STORAGE_KEY);
+refreshUI();
+}
+}
+function recalcRecordBudget(id) {
+const records = loadRecords();
+const rec = records.find(r => r.id === id);
+if (!rec) return;
+updateRecordById(id, { totalBudget: computeTotalBudget(rec.days, rec.dailyCost, rec.extraCost) });
+refreshUI();
+}
+function getFilterSortConfig() {
+return {
+status: document.getElementById("statusFilter").value,
+keyword: document.getElementById("searchInput").value.trim().toLowerCase(),
+sortMode: document.getElementById("sortSelect").value
+};
+}
+function filterAndSortRecords() {
+let records = loadRecords();
+const { status, keyword, sortMode } = getFilterSortConfig();
+if (status !== "all") records = records.filter(r => r.status === status);
+if (keyword !== "") records = records.filter(r => r.destination.toLowerCase().includes(keyword));
+if (sortMode === "createdDesc") records.sort((a,b) => new Date(b.createdAt) - new Date(a.createdAt));
+else if (sortMode === "createdAsc") records.sort((a,b) => new Date(a.createdAt) - new Date(b.createdAt));
+else if (sortMode === "budgetDesc") records.sort((a,b) => b.totalBudget - a.totalBudget);
+else if (sortMode === "budgetAsc") records.sort((a,b) => a.totalBudget - b.totalBudget);
+return records;
+}
+function getGlobalStats() {
+const all = loadRecords();
+return { total: all.length, active: all.filter(r => r.status === "active").length, done: all.filter(r => r.status === "done").length };
+}
+function refreshUI() {
+// 確保 DOM 載入完整才執行
+if (!document.getElementById("tripListContainer")) return;
+const filtered = filterAndSortRecords();
+const currency = document.getElementById("currencySelect").value;
+const globalStats = getGlobalStats();
+document.getElementById("totalRecordCount").innerHTML = `📌 总记录数: ${globalStats.total}`;
+document.getElementById("displayCount").innerText = filtered.length;
+document.getElementById("displayTotalBudget").innerHTML = `${Math.round(filtered.reduce((sum, r) => sum + r.totalBudget, 0)).toLocaleString()} ${currency}`;
+document.getElementById("activeCount").innerText = globalStats.active;
+document.getElementById("doneCount").innerText = globalStats.done;
+const container = document.getElementById("tripListContainer");
+if (!filtered.length) {
+container.innerHTML = `<div class="empty-state">🌸 沒有符合篩選條件的記錄，點新增出發吧 🌸</div>`;
+return;
+}
+container.innerHTML = filtered.map(record => `
+<div class="trip-card" data-id="${record.id}">
+<div class="card-header">
+<div class="dest-name">${escapeHtml(record.destination)}</div>
+<div class="status-badge ${record.status === "done" ? "done" : ""}">${record.status === "done" ? "✅ 已完成" : "✈️ 进行中"}</div>
+</div>
+<div class="info-grid">
+<div class="info-item"><div class="info-label">📅 天数</div><div class="info-value">${record.days} 天</div></div>
+<div class="info-item"><div class="info-label">💸 每日预算</div><div class="info-value">${Number(record.dailyCost).toLocaleString()} ${currency}</div></div>
+<div class="info-item"><div class="info-label">➕ 额外花费</div><div class="info-value">${Number(record.extraCost).toLocaleString()} ${currency}</div></div>
+<div class="info-item"><div class="info-label">💰 总预算</div><div class="info-value"><strong>${Number(record.totalBudget).toLocaleString()} ${currency}</strong></div></div>
+</div>
+<div class="card-actions">
+<button class="small-btn" data-action="toggle" data-id="${record.id}">${record.status === "done" ? "↻ 恢复 active" : "✓ 标记 done"}</button>
+<button class="small-btn" data-action="delete" data-id="${record.id}">🗑 删除</button>
+</div>
+</div>
+`).join("");
+}
+function escapeHtml(str) {
+if (!str) return '';
+return str.replace(/[&<>]/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' }[m]));
+}
+function onCreate() {
+const newRecord = buildRecordFromInput();
+if (!newRecord) return;
+addNewRecord(newRecord);
+document.getElementById("destinationInput").value = "";
+document.getElementById("daysInput").value = "";
+document.getElementById("dailyCostInput").value = "";
+document.getElementById("extraCostInput").value = "0";
+refreshUI();
+syncToSheet({ action: "create", record: newRecord });
+}
+function handleCardActions(e) {
+const btn = e.target.closest("[data-action]");
+if (!btn) return;
+const action = btn.getAttribute("data-action");
+const id = btn.getAttribute("data-id");
+if (!id) return;
+if (action === "delete" && confirm("确定删除此笔记录吗？")) {
+deleteRecordById(id);
+refreshUI();
+} else if (action === "toggle") {
+const records = loadRecords();
+const target = records.find(r => r.id === id);
+if (target) {
+const newStatus = target.status === "active" ? "done" : "active";
+updateRecordById(id, { status: newStatus });
+refreshUI();
+syncToSheet({ action: "update", id: id, changes: { status: newStatus } });
+}
+}
+}
+function bindFilterEvents() {
+document.getElementById("statusFilter").addEventListener("change", refreshUI);
+document.getElementById("sortSelect").addEventListener("change", refreshUI);
+document.getElementById("searchInput").addEventListener("input", refreshUI);
+document.getElementById("currencySelect").addEventListener("change", refreshUI);
+}
+
+// 🔥 核心修正防卡死機制
+function init() {
+bindFilterEvents();
+document.getElementById("createBtn").addEventListener("click", onCreate);
+document.getElementById("clearAllBtn").addEventListener("click", clearAllRecords);
+document.getElementById("tripListContainer").addEventListener("click", handleCardActions);
+
+// 【關鍵修改】：不管網頁有沒有聯網，一開啟先強制用本地資料渲染畫面！
+refreshUI();
+
+// 渲染完後，才悄悄在背景向 Google 連線，就算失敗也不會阻塞 UI 顯示
+fetchRecordsFromSheet().then(remoteRecords => {
+if (remoteRecords && remoteRecords.length > 0) {
+saveAllRecords(remoteRecords);
+refreshUI();
+}
+}).catch(err => {
+console.warn("背景同步 Google Sheet 中斷，目前完全使用本地快取運作：", err);
+});
+}
+
+// 確保 DOM 樹載入完畢才執行
+if (document.readyState === "loading") {
+document.addEventListener("DOMContentLoaded", init);
+} else {
+init();
+}
+</script>
+</body>
+</html>

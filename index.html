@@ -36,13 +36,11 @@ font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', 'Noto Sans TC', 'Pin
 color: var(--text-main);
 padding: 0 0 32px 0;
 }
-/* 容器 + 响应式 */
 .container {
 max-width: 1280px;
 margin: 0 auto;
 padding: 20px 24px 40px;
 }
-/* 头部区域 */
 .hero {
 margin-bottom: 32px;
 }
@@ -64,7 +62,6 @@ font-size: 0.95rem;
 border-left: 3px solid var(--accent);
 padding-left: 16px;
 }
-/* 双栏布局 */
 .dashboard-grid {
 display: grid;
 grid-template-columns: 1fr 0.9fr;
@@ -80,7 +77,6 @@ gap: 24px;
 padding: 16px;
 }
 }
-/* 面板卡片通用样式 */
 .card-panel {
 background: var(--surface);
 backdrop-filter: blur(6px);
@@ -101,146 +97,4 @@ gap: 12px;
 .panel-title span {
 background: rgba(255, 107, 166, 0.15);
 padding: 6px 12px;
-border-radius: 40px;
-font-size: 0.8rem;
-color: var(--accent-dark);
-font-weight: 600;
-}
-/* 表单项 */
-label {
-font-size: 0.8rem;
-font-weight: 700;
-color: var(--text-soft);
-letter-spacing: 0.3px;
-margin-bottom: 6px;
-display: block;
-}
-input, select {
-width: 100%;
-padding: 12px 14px;
-border-radius: var(--radius-element);
-border: 1.5px solid var(--border-light);
-background: white;
-font-size: 0.9rem;
-transition: 0.2s;
-outline: none;
-color: var(--text-main);
-}
-input:focus, select:focus {
-border-color: var(--accent);
-box-shadow: 0 0 0 3px rgba(255, 107, 166, 0.2);
-}
-.row-2col {
-display: grid;
-grid-template-columns: 1fr 1fr;
-gap: 14px;
-margin-top: 6px;
-}
-/* 按钮 */
-.btn-group {
-display: flex;
-gap: 12px;
-margin-top: 22px;
-flex-wrap: wrap;
-}
-.btn {
-border: none;
-background: white;
-padding: 10px 18px;
-border-radius: 40px;
-font-weight: 700;
-font-size: 0.85rem;
-cursor: pointer;
-transition: 0.15s linear;
-border: 1px solid var(--border-light);
-color: var(--text-main);
-}
-.btn-primary {
-background: #ffecf2;
-border-color: var(--accent);
-color: var(--accent-dark);
-box-shadow: 0 2px 5px rgba(255, 105, 180, 0.1);
-}
-.btn-primary:hover {
-background: #ffe2ed;
-transform: translateY(-2px);
-}
-.btn-danger {
-background: #fff2f0;
-border-color: #ffb3b3;
-color: #bc4a4a;
-}
-.btn-danger:hover {
-background: #ffe0de;
-}
-/* 筛选栏 */
-.filter-bar {
-display: flex;
-flex-wrap: wrap;
-gap: 16px;
-margin-bottom: 24px;
-align-items: flex-end;
-}
-.filter-item {
-flex: 1;
-min-width: 150px;
-}
-.stat-cards {
-display: grid;
-grid-template-columns: repeat(2, 1fr);
-gap: 12px;
-margin-top: 20px;
-}
-.stat-card {
-background: rgba(255,255,235,0.6);
-border-radius: 24px;
-padding: 14px;
-text-align: center;
-backdrop-filter: blur(2px);
-}
-.stat-label {
-font-size: 0.7rem;
-text-transform: uppercase;
-font-weight: 800;
-color: var(--text-soft);
-}
-.stat-number {
-font-size: 1.6rem;
-font-weight: 800;
-color: var(--accent-dark);
-line-height: 1.2;
-}
-/* 记录列表头部 */
-.list-header {
-display: flex;
-justify-content: space-between;
-align-items: baseline;
-flex-wrap: wrap;
-gap: 12px;
-margin: 20px 0 16px 0;
-}
-.search-box {
-min-width: 220px;
-flex: 2;
-}
-.record-count {
-background: rgba(255,107,166,0.1);
-padding: 6px 14px;
-border-radius: 50px;
-font-weight: 600;
-font-size: 0.8rem;
-}
-/* 卡片列表 */
-.cards-list {
-display: flex;
-flex-direction: column;
-gap: 18px;
-}
-.trip-card {
-background: var(--card-bg);
-backdrop-filter: blur(4px);
-border-radius: 28px;
-border: 1px solid var(--border-light);
-padding: 18px;
-transition: all 0.2s;
-box-shadow: 0 6px 14px rgba(0,
+border-radius: 40px

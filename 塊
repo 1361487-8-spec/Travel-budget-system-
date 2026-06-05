@@ -1,0 +1,490 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>旅行資金計算系統</title>
+  <style>
+    :root{
+      --bg: #fff0f6;
+      --panel: rgba(255,255,255,.75);
+      --card: rgba(255,182,204,.18);
+      --border: rgba(255,105,180,.25);
+      --text: #2b1230;
+      --muted:#6a3a6e;
+      --accent:#ff4fa3;
+      --shadow: 0 12px 30px rgba(255, 79, 163, .18);
+      --radius: 18px;
+    }
+    *{ box-sizing: border-box; }
+    body{
+      margin:0;
+      font-family: system-ui, -apple-system, "Segoe UI", "Noto Sans TC", sans-serif;
+      color: var(--text);
+      background: radial-gradient(900px 450px at 10% 0%, rgba(255,79,163,.25), transparent 55%),
+                  radial-gradient(900px 450px at 95% 10%, rgba(255,123,191,.25), transparent 55%),
+                  linear-gradient(180deg, #fff0f6 0%, #ffe6f2 100%);
+      min-height:100vh;
+    }
+    .wrap{ max-width: 1080px; margin: 0 auto; padding: 18px 16px; }
+    h1{ margin:0; font-size: 22px; }
+    .sub{ margin:6px 0 0 0; color: var(--muted); font-size: 13px; }
+    .grid{
+      display:grid;
+      grid-template-columns: 1.1fr .9fr;
+      gap:14px;
+      margin-top: 14px;
+    }
+    @media (max-width: 900px){ .grid{ grid-template-columns: 1fr; } }
+    .panel{
+      background: var(--panel);
+      border: 1px solid rgba(255,105,180,.22);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 14px;
+    }
+    .section-title{
+      display:flex;
+      align-items:center;
+      gap:10px;
+      margin-bottom: 10px;
+    }
+    .section-title .tag{
+      font-weight:800;
+      color: #a0124b;
+      background: rgba(255,79,163,.14);
+      border: 1px solid rgba(255,79,163,.25);
+      padding: 7px 10px;
+      border-radius: 999px;
+      font-size: 12px;
+    }
+    label{
+      display:block;
+      font-size: 12px;
+      color: var(--muted);
+      margin-top: 10px;
+      margin-bottom: 6px;
+      font-weight: 700;
+    }
+    input, select{
+      width:100%;
+      border-radius: 14px;
+      border: 1px solid rgba(255,105,180,.28);
+      background: rgba(255,255,255,.65);
+      padding: 11px 12px;
+      outline: none;
+    }
+    .row{
+      display:grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+    @media (max-width: 560px){ .row{ grid-template-columns: 1fr; } }
+    .btnbar{
+      display:flex;
+      gap:10px;
+      margin-top: 14px;
+    }
+    button{
+      border-radius: 14px;
+      border: 1px solid rgba(255,105,180,.30);
+      background: rgba(255,255,255,.7);
+      padding: 10px 12px;
+      cursor:pointer;
+      font-weight: 800;
+    }
+    .primary{
+      background: linear-gradient(180deg, rgba(255,79,163,.20), rgba(255,79,163,.12));
+      border-color: rgba(255,79,163,.45);
+    }
+    .danger{
+      background: rgba(255,75,75,.10);
+      border-color: rgba(255,75,75,.35);
+      color:#7a0c0c;
+    }
+    .filters{
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+    }
+    .stats{
+      display:grid;
+      grid-template-columns: 1fr 1fr;
+      gap:10px;
+      margin-top: 12px;
+    }
+    .stat{
+      border: 1px dashed rgba(255,105,180,.35);
+      border-radius: 16px;
+      padding: 12px;
+      background: rgba(255,255,255,.55);
+    }
+    .stat .k{ color: var(--muted); font-size: 12px; font-weight: 800; }
+    .stat .v{ margin-top: 6px; font-size: 18px; font-weight: 900; }
+    .list-head{
+      margin-top: 16px;
+      display:flex;
+      justify-content:space-between;
+      flex-wrap:wrap;
+      gap:12px;
+    }
+    .searchbar input{ min-width: 240px; }
+    .countline{ color: var(--muted); font-size: 13px; font-weight: 700; }
+    .list{
+      display:flex;
+      flex-direction:column;
+      gap:12px;
+      margin-top: 12px;
+    }
+    .card{
+      border-radius: var(--radius);
+      background: linear-gradient(180deg, rgba(255,255,255,.72), rgba(255,255,255,.55));
+      border: 1px solid rgba(255,105,180,.22);
+      padding: 12px;
+    }
+    .card-top{
+      display:flex;
+      justify-content:space-between;
+      flex-wrap:wrap;
+      gap:12px;
+    }
+    .dest{ margin:0; font-weight: 1000; font-size: 16px; }
+    .meta{ color: var(--muted); font-size: 12px; margin-top: 6px; display:flex; gap:10px; flex-wrap:wrap; }
+    .badge{
+      font-size: 12px;
+      font-weight: 900;
+      padding: 6px 10px;
+      border-radius: 999px;
+      background: rgba(255,79,163,.10);
+      color: #7b1248;
+    }
+    .badge.done{
+      background: rgba(247,184,75,.14);
+      color: #6a460c;
+    }
+    .card-body{
+      margin-top: 10px;
+      display:grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+    @media (max-width: 700px){ .card-body{ grid-template-columns: 1fr; } }
+    .kv{
+      background: rgba(255,182,204,.14);
+      border-radius: 16px;
+      padding: 10px;
+    }
+    .kv .k{ color: var(--muted); font-size: 12px; font-weight: 900; }
+    .kv .v{ margin-top: 6px; font-size: 15px; font-weight: 1000; }
+    .card-bottom{
+      margin-top: 10px;
+      padding-top: 10px;
+      border-top: 1px dashed rgba(255,105,180,.28);
+      display:flex;
+      justify-content:space-between;
+      flex-wrap:wrap;
+      gap:10px;
+    }
+    .actions{ display:flex; gap:10px; }
+    .small-btn{ padding: 6px 10px; border-radius: 14px; font-size: 12px; cursor:pointer; }
+    .empty{
+      text-align:center;
+      padding: 22px;
+      color: var(--muted);
+    }
+    .footer-note{
+      margin-top: 10px;
+      color: var(--muted);
+      font-size: 12px;
+      text-align:center;
+    }
+  </style>
+</head>
+<body>
+<header>
+  <div class="wrap">
+    <div class="title-row">
+      <div>
+        <h1>✈️ 旅行資金計算系統</h1>
+        <p class="sub">自動計算總預算 · 串接 Google Sheet · 粉紅系風格 💗</p>
+      </div>
+    </div>
+    <div class="grid">
+      <!-- 左：新增表單 -->
+      <div class="panel">
+        <div class="section-title">
+          <div class="tag">新增旅行資金記錄</div>
+        </div>
+        <label>目的地（必填）</label>
+        <input id="destination" type="text" placeholder="例如：東京 / 巴黎" />
+        <div class="row">
+          <div><label>天數（必填）</label><input id="days" type="number" min="1" /></div>
+          <div><label>每日預算（必填）</label><input id="dailyCost" type="number" min="0" /></div>
+        </div>
+        <div class="row">
+          <div><label>額外花費</label><input id="extraCost" type="number" min="0" value="0" /></div>
+          <div><label>顯示幣別</label><select id="currency"><option>TWD</option><option>JPY</option><option>USD</option><option>EUR</option></select></div>
+        </div>
+        <div class="btnbar">
+          <button class="primary" id="btnCreate">➕ 新增並同步 Sheet</button>
+          <button class="danger" id="btnClearAll">🗑️ 清除全部</button>
+        </div>
+      </div>
+
+      <!-- 右：篩選與統計 -->
+      <div class="panel">
+        <div class="section-title"><div class="tag">篩選與總覽</div></div>
+        <div class="filters">
+          <select id="statusFilter" style="flex:1">
+            <option value="all">全部狀態</option>
+            <option value="active">進行中</option>
+            <option value="done">已完成</option>
+          </select>
+          <select id="sortMode" style="flex:1">
+            <option value="createdDesc">最新優先</option>
+            <option value="createdAsc">最舊優先</option>
+            <option value="budgetDesc">預算高→低</option>
+            <option value="budgetAsc">預算低→高</option>
+          </select>
+        </div>
+        <div class="stats">
+          <div class="stat"><div class="k">顯示筆數</div><div class="v" id="statCount">0</div></div>
+          <div class="stat"><div class="k">總預算</div><div class="v" id="statTotal">0</div></div>
+        </div>
+        <div class="searchbar" style="margin-top:12px;">
+          <input id="search" type="text" placeholder="🔍 搜尋目的地" style="width:100%" />
+        </div>
+      </div>
+    </div>
+  </div>
+</header>
+<main>
+  <div class="wrap">
+    <div class="list-head">
+      <div class="countline" id="countLine">共 0 筆記錄</div>
+    </div>
+    <div id="list" class="list"></div>
+    <div class="footer-note">
+      ✅ 資料同步 Google Sheet · 無痕模式也可讀回
+    </div>
+  </div>
+</main>
+
+<script>
+  // ========== 請替換成你的 Apps Script URL ==========
+  const APPS_SCRIPT_URL = "YOUR_APPS_SCRIPT_URL";  // ⚠️ 改成你的 /exec 網址
+  
+  // ========== 全域變數 ==========
+  let masterRecords = [];
+  
+  // ========== 輔助函數 ==========
+  function escapeHTML(str) {
+    return String(str ?? "").replace(/[&<>]/g, function(m) {
+      if (m === '&') return '&amp;';
+      if (m === '<') return '&lt;';
+      if (m === '>') return '&gt;';
+      return m;
+    });
+  }
+  
+  function formatDate(iso) {
+    if (!iso) return "";
+    try {
+      const d = new Date(iso);
+      return `${d.getFullYear()}/${d.getMonth()+1}/${d.getDate()} ${d.getHours().toString().padStart(2,'0')}:${d.getMinutes().toString().padStart(2,'0')}`;
+    } catch(e) { return iso; }
+  }
+  
+  function calcTotalBudget(days, dailyCost, extraCost) {
+    return (Number(days) || 0) * (Number(dailyCost) || 0) + (Number(extraCost) || 0);
+  }
+  
+  // ========== 從 Google Sheet 讀取資料 (doGet) ==========
+  async function fetchFromSheet() {
+    try {
+      const res = await fetch(APPS_SCRIPT_URL);
+      const data = await res.json();
+      if (data.ok && Array.isArray(data.records)) {
+        masterRecords = data.records;
+        // 確保每個 record 都有正確認格式
+        masterRecords.forEach(r => {
+          r.totalBudget = Number(r.totalBudget) || calcTotalBudget(r.days, r.dailyCost, r.extraCost);
+        });
+      } else {
+        console.warn("讀取失敗，使用 localStorage 備份");
+        const backup = localStorage.getItem("travel_backup");
+        if (backup) masterRecords = JSON.parse(backup);
+      }
+    } catch(err) {
+      console.error("fetch error:", err);
+      const backup = localStorage.getItem("travel_backup");
+      if (backup) masterRecords = JSON.parse(backup);
+    }
+    localStorage.setItem("travel_backup", JSON.stringify(masterRecords));
+    refresh();
+  }
+  
+  // ========== 寫入 Google Sheet (doPost) ==========
+  async function syncToSheet(payload) {
+    try {
+      await fetch(APPS_SCRIPT_URL, {
+        method: "POST",
+        mode: "no-cors",
+        headers: { "Content-Type": "text/plain" },
+        body: JSON.stringify(payload)
+      });
+    } catch(e) { console.warn("sync error", e); }
+  }
+  
+  // ========== 新增記錄 ==========
+  async function createRecord() {
+    const destination = document.getElementById("destination").value.trim();
+    const days = parseInt(document.getElementById("days").value);
+    const dailyCost = parseFloat(document.getElementById("dailyCost").value);
+    const extraCost = parseFloat(document.getElementById("extraCost").value) || 0;
+    
+    // 輸入驗證
+    if (!destination) { alert("請輸入目的地"); return; }
+    if (!days || days <= 0) { alert("天數必須大於0"); return; }
+    if (isNaN(dailyCost) || dailyCost < 0) { alert("每日預算需大於等於0"); return; }
+    
+    const totalBudget = days * dailyCost + extraCost;
+    const newRecord = {
+      id: crypto.randomUUID ? crypto.randomUUID() : Date.now().toString(),
+      createdAt: new Date().toISOString(),
+      status: "active",
+      destination: destination,
+      days: days,
+      dailyCost: dailyCost,
+      extraCost: extraCost,
+      totalBudget: totalBudget
+    };
+    
+    masterRecords.unshift(newRecord);
+    localStorage.setItem("travel_backup", JSON.stringify(masterRecords));
+    await syncToSheet({ action: "create", record: newRecord });
+    
+    // 清空表單
+    document.getElementById("destination").value = "";
+    document.getElementById("days").value = "";
+    document.getElementById("dailyCost").value = "";
+    document.getElementById("extraCost").value = "0";
+    
+    await fetchFromSheet(); // 重新同步最新資料
+  }
+  
+  // ========== 切換狀態 ==========
+  async function toggleStatus(id) {
+    const record = masterRecords.find(r => r.id === id);
+    if (!record) return;
+    const newStatus = record.status === "active" ? "done" : "active";
+    record.status = newStatus;
+    localStorage.setItem("travel_backup", JSON.stringify(masterRecords));
+    await syncToSheet({ action: "update", record: { id: id, status: newStatus } });
+    await fetchFromSheet();
+  }
+  
+  // ========== 刪除記錄 ==========
+  async function deleteRecord(id) {
+    if (!confirm("確定刪除此筆記錄？")) return;
+    masterRecords = masterRecords.filter(r => r.id !== id);
+    localStorage.setItem("travel_backup", JSON.stringify(masterRecords));
+    await syncToSheet({ action: "delete", record: { id: id } });
+    await fetchFromSheet();
+  }
+  
+  // ========== 清除全部 ==========
+  async function clearAll() {
+    if (!confirm("⚠️ 清除所有記錄（會同步刪除 Sheet 資料）")) return;
+    for (const record of masterRecords) {
+      await syncToSheet({ action: "delete", record: { id: record.id } });
+    }
+    masterRecords = [];
+    localStorage.setItem("travel_backup", "[]");
+    await fetchFromSheet();
+  }
+  
+  // ========== 篩選 + 排序 + 搜尋 ==========
+  function getFilteredRecords() {
+    const status = document.getElementById("statusFilter").value;
+    const keyword = document.getElementById("search").value.trim().toLowerCase();
+    const sortMode = document.getElementById("sortMode").value;
+    
+    let filtered = [...masterRecords];
+    if (status !== "all") filtered = filtered.filter(r => r.status === status);
+    if (keyword) filtered = filtered.filter(r => r.destination?.toLowerCase().includes(keyword));
+    
+    if (sortMode === "createdDesc") filtered.sort((a,b) => new Date(b.createdAt) - new Date(a.createdAt));
+    else if (sortMode === "createdAsc") filtered.sort((a,b) => new Date(a.createdAt) - new Date(b.createdAt));
+    else if (sortMode === "budgetDesc") filtered.sort((a,b) => (b.totalBudget||0) - (a.totalBudget||0));
+    else if (sortMode === "budgetAsc") filtered.sort((a,b) => (a.totalBudget||0) - (b.totalBudget||0));
+    
+    return filtered;
+  }
+  
+  // ========== 渲染畫面 ==========
+  function refresh() {
+    const filtered = getFilteredRecords();
+    const currency = document.getElementById("currency").value;
+    const totalSum = filtered.reduce((s, r) => s + (r.totalBudget || 0), 0);
+    
+    document.getElementById("statCount").innerText = filtered.length;
+    document.getElementById("statTotal").innerHTML = `${Math.round(totalSum).toLocaleString()} ${currency}`;
+    document.getElementById("countLine").innerHTML = `📌 共 ${masterRecords.length} 筆記錄 (顯示 ${filtered.length} 筆)`;
+    
+    const container = document.getElementById("list");
+    if (filtered.length === 0) {
+      container.innerHTML = `<div class="empty">✨ 沒有符合的記錄，新增一筆吧 ✨</div>`;
+      return;
+    }
+    
+    container.innerHTML = filtered.map(r => `
+      <div class="card" data-id="${escapeHTML(r.id)}">
+        <div class="card-top">
+          <div>
+            <h3 class="dest">✈️ ${escapeHTML(r.destination)}</h3>
+            <div class="meta"><span>📅 ${formatDate(r.createdAt)}</span></div>
+          </div>
+          <div class="badge ${r.status === 'done' ? 'done' : ''}">${r.status === 'active' ? '進行中' : '✅ 已完成'}</div>
+        </div>
+        <div class="card-body">
+          <div class="kv"><div class="k">📆 天數</div><div class="v">${r.days} 天</div></div>
+          <div class="kv"><div class="k">💸 每日預算</div><div class="v">${Number(r.dailyCost).toLocaleString()} ${currency}</div></div>
+          <div class="kv"><div class="k">➕ 額外花費</div><div class="v">${Number(r.extraCost).toLocaleString()} ${currency}</div></div>
+          <div class="kv"><div class="k">💰 總預算</div><div class="v"><strong>${Number(r.totalBudget).toLocaleString()} ${currency}</strong></div></div>
+        </div>
+        <div class="card-bottom">
+          <div class="actions">
+            <button class="small-btn" data-action="toggle" data-id="${escapeHTML(r.id)}">🔄 切換狀態</button>
+            <button class="small-btn danger" data-action="delete" data-id="${escapeHTML(r.id)}">🗑️ 刪除</button>
+          </div>
+        </div>
+      </div>
+    `).join("");
+  }
+  
+  // ========== 事件綁定 ==========
+  function bindEvents() {
+    document.getElementById("btnCreate").addEventListener("click", createRecord);
+    document.getElementById("btnClearAll").addEventListener("click", clearAll);
+    document.getElementById("statusFilter").addEventListener("change", () => refresh());
+    document.getElementById("sortMode").addEventListener("change", () => refresh());
+    document.getElementById("search").addEventListener("input", () => refresh());
+    document.getElementById("currency").addEventListener("change", () => refresh());
+    
+    document.getElementById("list").addEventListener("click", async (e) => {
+      const btn = e.target.closest("[data-action]");
+      if (!btn) return;
+      const id = btn.getAttribute("data-id");
+      const action = btn.getAttribute("data-action");
+      if (action === "toggle") await toggleStatus(id);
+      if (action === "delete") await deleteRecord(id);
+    });
+  }
+  
+  // ========== 初始化 ==========
+  fetchFromSheet();
+  bindEvents();
+</script>
+</body>
+</html>

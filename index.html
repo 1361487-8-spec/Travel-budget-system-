@@ -1,101 +1,790 @@
-function doGet(e) {
-  try {
-    const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(SHEET_NAME);
-    const data = sheet.getDataRange().getValues();
-    const headers = data[0];
-    const records = [];
-    
-    for (let i = 1; i < data.length; i++) {
-      const row = data[i];
-      const record = {};
-      headers.forEach((header, idx) => {
-        record[header] = row[idx];
-      });
-      records.push(record);
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>旅行资金计算系统 · 资金规划助手</title>
+  <style>
+    /* ========== 全局样式 & 粉红系重构 ========== */
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
     }
-    
-    return ContentService.createTextOutput(JSON.stringify({
-      ok: true,
-      records: records
-    })).setMimeType(ContentService.MimeType.JSON);
-    
-  } catch(e) {
-    return ContentService.createTextOutput(JSON.stringify({
-      ok: false,
-      error: e.toString()
-    })).setMimeType(ContentService.MimeType.JSON);
-  }
-}
 
-function doPost(e) {
-  try {
-    const data = JSON.parse(e.postData.contents);
-    const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(SHEET_NAME);
-    const action = data.action;
-    const record = data.record;
-    
-    if (action === "create") {
-      // 新增记录
-      const row = [
-        record.id,
-        record.createdAt,
-        record.status,
-        record.destination,
-        record.days,
-        record.dailyCost,
-        record.extraCost,
-        record.totalBudget
-      ];
-      sheet.appendRow(row);
-      
-    } else if (action === "update") {
-      // 更新记录 (根据 id 查找并更新)
-      const id = record.id;
-      const dataRange = sheet.getDataRange().getValues();
-      const headers = dataRange[0];
-      let idCol = -1;
-      for (let i = 0; i < headers.length; i++) {
-        if (headers[i] === "id") idCol = i;
+    :root {
+      --bg-gradient: linear-gradient(145deg, #fff5f9 0%, #ffeaf2 100%);
+      --surface: rgba(255, 248, 251, 0.85);
+      --card-bg: rgba(255, 255, 255, 0.75);
+      --card-shadow: 0 20px 35px -12px rgba(255, 80, 160, 0.18);
+      --accent: #ff6ba6;
+      --accent-light: #ffb3d1;
+      --accent-dark: #d43f7a;
+      --text-main: #3a1e2c;
+      --text-soft: #7a4c62;
+      --border-light: rgba(255, 110, 170, 0.2);
+      --badge-active: #ffecf0;
+      --badge-done: #e6f9ed;
+      --green-done: #2b8c5e;
+      --gold: #f5b042;
+      --radius-card: 28px;
+      --radius-element: 20px;
+    }
+
+    body {
+      background: var(--bg-gradient);
+      font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', 'Noto Sans TC', 'PingFang TC', 'Microsoft JhengHei', sans-serif;
+      color: var(--text-main);
+      padding: 0 0 32px 0;
+    }
+
+    /* 容器 + 响应式 */
+    .container {
+      max-width: 1280px;
+      margin: 0 auto;
+      padding: 20px 24px 40px;
+    }
+
+    /* 头部区域 */
+    .hero {
+      margin-bottom: 32px;
+    }
+
+    .hero h1 {
+      font-size: 1.9rem;
+      font-weight: 700;
+      background: linear-gradient(135deg, #d6457a, #b23b67);
+      background-clip: text;
+      -webkit-background-clip: text;
+      color: transparent;
+      letter-spacing: -0.3px;
+      display: inline-block;
+    }
+
+    .hero .sub {
+      color: var(--text-soft);
+      margin-top: 8px;
+      font-weight: 500;
+      font-size: 0.95rem;
+      border-left: 3px solid var(--accent);
+      padding-left: 16px;
+    }
+
+    /* 双栏布局 */
+    .dashboard-grid {
+      display: grid;
+      grid-template-columns: 1fr 0.9fr;
+      gap: 28px;
+      margin-bottom: 40px;
+    }
+
+    @media (max-width: 880px) {
+      .dashboard-grid {
+        grid-template-columns: 1fr;
+        gap: 24px;
       }
-      
-      for (let i = 1; i < dataRange.length; i++) {
-        if (dataRange[i][idCol] === id) {
-          // 更新 status 字段
-          const statusCol = headers.indexOf("status");
-          if (statusCol !== -1 && record.status) {
-            sheet.getRange(i+1, statusCol+1).setValue(record.status);
-          }
-          break;
-        }
-      }
-      
-    } else if (action === "delete") {
-      // 删除记录
-      const id = record.id;
-      const dataRange = sheet.getDataRange().getValues();
-      const headers = dataRange[0];
-      let idCol = -1;
-      for (let i = 0; i < headers.length; i++) {
-        if (headers[i] === "id") idCol = i;
-      }
-      
-      for (let i = 1; i < dataRange.length; i++) {
-        if (dataRange[i][idCol] === id) {
-          sheet.deleteRow(i+1);
-          break;
-        }
+      .container {
+        padding: 16px;
       }
     }
-    
-    return ContentService.createTextOutput(JSON.stringify({
-      ok: true,
-      message: "success"
-    })).setMimeType(ContentService.MimeType.JSON);
-    
-  } catch(e) {
-    return ContentService.createTextOutput(JSON.stringify({
-      ok: false,
-      error: e.toString()
-    })).setMimeType(ContentService.MimeType.JSON);
+
+    /* 面板卡片通用样式 */
+    .card-panel {
+      background: var(--surface);
+      backdrop-filter: blur(6px);
+      border-radius: var(--radius-card);
+      border: 1px solid var(--border-light);
+      box-shadow: var(--card-shadow);
+      padding: 1.5rem;
+      transition: all 0.2s ease;
+    }
+
+    .panel-title {
+      font-weight: 700;
+      font-size: 1.25rem;
+      margin-bottom: 1.2rem;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .panel-title span {
+      background: rgba(255, 107, 166, 0.15);
+      padding: 6px 12px;
+      border-radius: 40px;
+      font-size: 0.8rem;
+      color: var(--accent-dark);
+      font-weight: 600;
+    }
+
+    /* 表单项 */
+    label {
+      font-size: 0.8rem;
+      font-weight: 700;
+      color: var(--text-soft);
+      letter-spacing: 0.3px;
+      margin-bottom: 6px;
+      display: block;
+    }
+
+    input, select {
+      width: 100%;
+      padding: 12px 14px;
+      border-radius: var(--radius-element);
+      border: 1.5px solid var(--border-light);
+      background: white;
+      font-size: 0.9rem;
+      transition: 0.2s;
+      outline: none;
+      color: var(--text-main);
+    }
+
+    input:focus, select:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px rgba(255, 107, 166, 0.2);
+    }
+
+    .row-2col {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px;
+      margin-top: 6px;
+    }
+
+    /* 按钮 */
+    .btn-group {
+      display: flex;
+      gap: 12px;
+      margin-top: 22px;
+      flex-wrap: wrap;
+    }
+
+    .btn {
+      border: none;
+      background: white;
+      padding: 10px 18px;
+      border-radius: 40px;
+      font-weight: 700;
+      font-size: 0.85rem;
+      cursor: pointer;
+      transition: 0.15s linear;
+      border: 1px solid var(--border-light);
+      color: var(--text-main);
+    }
+
+    .btn-primary {
+      background: #ffecf2;
+      border-color: var(--accent);
+      color: var(--accent-dark);
+      box-shadow: 0 2px 5px rgba(255, 105, 180, 0.1);
+    }
+
+    .btn-primary:hover {
+      background: #ffe2ed;
+      transform: translateY(-2px);
+    }
+
+    .btn-danger {
+      background: #fff2f0;
+      border-color: #ffb3b3;
+      color: #bc4a4a;
+    }
+
+    .btn-danger:hover {
+      background: #ffe0de;
+    }
+
+    /* 筛选栏 */
+    .filter-bar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 16px;
+      margin-bottom: 24px;
+      align-items: flex-end;
+    }
+
+    .filter-item {
+      flex: 1;
+      min-width: 150px;
+    }
+
+    .stat-cards {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 12px;
+      margin-top: 20px;
+    }
+
+    .stat-card {
+      background: rgba(255,255,235,0.6);
+      border-radius: 24px;
+      padding: 14px;
+      text-align: center;
+      backdrop-filter: blur(2px);
+    }
+
+    .stat-label {
+      font-size: 0.7rem;
+      text-transform: uppercase;
+      font-weight: 800;
+      color: var(--text-soft);
+    }
+
+    .stat-number {
+      font-size: 1.6rem;
+      font-weight: 800;
+      color: var(--accent-dark);
+      line-height: 1.2;
+    }
+
+    /* 记录列表头部 */
+    .list-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin: 20px 0 16px 0;
+    }
+
+    .search-box {
+      min-width: 220px;
+      flex: 2;
+    }
+
+    .record-count {
+      background: rgba(255,107,166,0.1);
+      padding: 6px 14px;
+      border-radius: 50px;
+      font-weight: 600;
+      font-size: 0.8rem;
+    }
+
+    /* 卡片列表 */
+    .cards-list {
+      display: flex;
+      flex-direction: column;
+      gap: 18px;
+    }
+
+    .trip-card {
+      background: var(--card-bg);
+      backdrop-filter: blur(4px);
+      border-radius: 28px;
+      border: 1px solid var(--border-light);
+      padding: 18px;
+      transition: all 0.2s;
+      box-shadow: 0 6px 14px rgba(0, 0, 0, 0.02);
+    }
+
+    .trip-card:hover {
+      transform: translateY(-3px);
+      background: rgba(255, 255, 255, 0.85);
+      border-color: rgba(255, 140, 190, 0.4);
+    }
+
+    .card-header {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 14px;
+    }
+
+    .dest-name {
+      font-size: 1.35rem;
+      font-weight: 800;
+      letter-spacing: -0.2px;
+    }
+
+    .status-badge {
+      font-size: 0.7rem;
+      font-weight: 800;
+      padding: 6px 14px;
+      border-radius: 60px;
+      background: var(--badge-active);
+      color: #b1446e;
+    }
+
+    .status-badge.done {
+      background: var(--badge-done);
+      color: var(--green-done);
+    }
+
+    .info-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+      gap: 12px;
+      margin: 16px 0 12px;
+    }
+
+    .info-item {
+      background: rgba(255, 240, 245, 0.5);
+      border-radius: 20px;
+      padding: 10px 12px;
+    }
+
+    .info-label {
+      font-size: 0.7rem;
+      font-weight: 700;
+      color: var(--text-soft);
+    }
+
+    .info-value {
+      font-weight: 800;
+      font-size: 1rem;
+      margin-top: 4px;
+    }
+
+    .card-actions {
+      display: flex;
+      gap: 10px;
+      justify-content: flex-end;
+      margin-top: 10px;
+    }
+
+    .small-btn {
+      background: transparent;
+      border: 1px solid var(--border-light);
+      padding: 6px 12px;
+      border-radius: 32px;
+      font-size: 0.7rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: 0.1s;
+    }
+
+    .empty-state {
+      text-align: center;
+      padding: 48px 20px;
+      background: rgba(255,255,240,0.5);
+      border-radius: 48px;
+      color: var(--text-soft);
+    }
+
+    .footer-tip {
+      text-align: center;
+      margin-top: 32px;
+      font-size: 0.7rem;
+      color: var(--text-soft);
+      border-top: 1px dashed var(--border-light);
+      padding-top: 20px;
+    }
+
+    @media (max-width: 640px) {
+      .info-grid {
+        grid-template-columns: 1fr;
+      }
+      .dest-name {
+        font-size: 1.2rem;
+      }
+      .card-panel {
+        padding: 1rem;
+      }
+    }
+  </style>
+</head>
+<body>
+<div class="container">
+  <div class="hero">
+    <h1>✈️ 旅行资金计算系统</h1>
+    <p class="sub">自动预算 · 智能筛选 · 旅程管理 — 你的粉红旅伴 💗</p>
+  </div>
+
+  <!-- 左右功能区：新增 + 筛选统计 -->
+  <div class="dashboard-grid">
+    <!-- 左侧：新增记录表单 -->
+    <div class="card-panel">
+      <div class="panel-title">
+        📝 新增旅行资金记录 <span>必填项带 *</span>
+      </div>
+      <label>目的地 *</label>
+      <input type="text" id="destinationInput" placeholder="例：京都 / 巴黎 / 垦丁" maxlength="70" />
+
+      <div class="row-2col">
+        <div>
+          <label>天数 *</label>
+          <input type="number" id="daysInput" min="1" placeholder="天数" />
+        </div>
+        <div>
+          <label>每日预算 *</label>
+          <input type="number" id="dailyCostInput" min="0" placeholder="每日花费 (当地币)" />
+        </div>
+      </div>
+
+      <div class="row-2col">
+        <div>
+          <label>额外花费 (可选)</label>
+          <input type="number" id="extraCostInput" min="0" placeholder="额外支出" value="0" />
+        </div>
+        <div>
+          <label>币别显示</label>
+          <select id="currencySelect">
+            <option value="TWD">TWD 新台币</option>
+            <option value="JPY">JPY 日圆</option>
+            <option value="USD">USD 美金</option>
+            <option value="EUR">EUR 欧元</option>
+            <option value="HKD">HKD 港币</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="btn-group">
+        <button class="btn btn-primary" id="createBtn">✨ 新增并计算总预算</button>
+        <button class="btn btn-danger" id="clearAllBtn">🗑️ 清除所有记录</button>
+      </div>
+      <div style="font-size: 0.7rem; margin-top: 14px; color:#a06b7c;">总预算 = 天数 × 每日预算 + 额外花费</div>
+    </div>
+
+    <!-- 右侧：筛选与统计摘要 -->
+    <div class="card-panel">
+      <div class="panel-title">
+        🔍 筛选与总览 <span>即时更新</span>
+      </div>
+      <div class="filter-bar">
+        <div class="filter-item">
+          <label>状态筛选</label>
+          <select id="statusFilter">
+            <option value="all">全部 (active + done)</option>
+            <option value="active">进行中 active</option>
+            <option value="done">已完成 done</option>
+          </select>
+        </div>
+        <div class="filter-item">
+          <label>排序方式</label>
+          <select id="sortSelect">
+            <option value="createdDesc">📅 最新优先</option>
+            <option value="createdAsc">📅 最旧优先</option>
+            <option value="budgetDesc">💰 预算高 → 低</option>
+            <option value="budgetAsc">💰 预算低 → 高</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- 统计摘要卡片 -->
+      <div class="stat-cards">
+        <div class="stat-card"><div class="stat-label">显示笔数</div><div class="stat-number" id="displayCount">0</div></div>
+        <div class="stat-card"><div class="stat-label">显示总预算</div><div class="stat-number" id="displayTotalBudget">0</div></div>
+        <div class="stat-card"><div class="stat-label">active 旅程</div><div class="stat-number" id="activeCount">0</div></div>
+        <div class="stat-card"><div class="stat-label">done 旅程</div><div class="stat-number" id="doneCount">0</div></div>
+      </div>
+      <div class="footer-tip" style="margin-top: 12px; border: none;">💡 根据筛选&排序动态变化</div>
+    </div>
+  </div>
+
+  <!-- 列表区域：搜索 + 列表 -->
+  <div class="list-header">
+    <div class="search-box">
+      <input type="text" id="searchInput" placeholder="🔎 输入目的地关键字进行筛选..." autocomplete="off" />
+    </div>
+    <div class="record-count" id="totalRecordCount">📌 总记录数: 0</div>
+  </div>
+
+  <div id="tripListContainer" class="cards-list">
+    <!-- 动态卡片会渲染在这里 -->
+    <div class="empty-state">✨ 暂无旅行资金记录，请新增一笔 ✨</div>
+  </div>
+  <div class="footer-tip">
+    💾 资料储存在 localStorage (不会因刷新消失) · 完全前端验证 · 支援搜索/筛选/排序/统计
+  </div>
+</div>
+
+<script>
+  // ------------------------------ 存储KEY 及 辅助函数 ---------------------------------
+  const STORAGE_KEY = "travel_records_system";
+
+  // 通用工具
+  const clamp = (val) => (isNaN(val) || val < 0 ? 0 : Number(val));
+  const toNumber = (val) => {
+    const n = parseFloat(val);
+    return isNaN(n) ? null : n;
+  };
+
+  // 计算总预算
+  function computeTotalBudget(days, dailyCost, extraCost) {
+    const d = clamp(days);
+    const dc = clamp(dailyCost);
+    const ex = clamp(extraCost);
+    return d * dc + ex;
   }
-}
+
+  // 建立新记录 (含输入验证)
+  function buildRecordFromInput() {
+    const destination = document.getElementById("destinationInput").value.trim();
+    const daysRaw = document.getElementById("daysInput").value;
+    const dailyRaw = document.getElementById("dailyCostInput").value;
+    const extraRaw = document.getElementById("extraCostInput").value;
+
+    // 输入验证 (必填 + 正向数字)
+    if (destination === "") {
+      alert("❌ 目的地 (destination) 为必填字段！");
+      return null;
+    }
+    const days = toNumber(daysRaw);
+    const dailyCost = toNumber(dailyRaw);
+    if (days === null || days <= 0 || !Number.isInteger(Number(daysRaw))) {
+      alert("❌ 天数必须为正整数，且不能为空");
+      return null;
+    }
+    if (dailyCost === null || dailyCost < 0) {
+      alert("❌ 每日预算必须为大于等于0的数字");
+      return null;
+    }
+    const extraCost = extraRaw === "" ? 0 : toNumber(extraRaw);
+    const finalExtra = extraCost === null ? 0 : clamp(extraCost);
+
+    const totalBudget = computeTotalBudget(days, dailyCost, finalExtra);
+    return {
+      id: crypto.randomUUID ? crypto.randomUUID() : Date.now() + "-" + Math.random().toString(36),
+      createdAt: new Date().toISOString(),
+      status: "active",
+      destination: destination,
+      days: days,
+      dailyCost: dailyCost,
+      extraCost: finalExtra,
+      totalBudget: totalBudget
+    };
+  }
+
+  // 读取所有记录
+  function loadRecords() {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (!raw) return [];
+    try {
+      const data = JSON.parse(raw);
+      return Array.isArray(data) ? data : [];
+    } catch(e) {
+      return [];
+    }
+  }
+
+  // 保存全部
+  function saveAllRecords(records) {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(records));
+  }
+
+  // 新增记录 (存入)
+  function addNewRecord(record) {
+    if (!record) return false;
+    const records = loadRecords();
+    records.unshift(record);  // 最新在上方 (但排序会受当前排序影响, 渲染时会重新排序)
+    saveAllRecords(records);
+    return true;
+  }
+
+  // 更新单条记录
+  function updateRecordById(id, updatedFields) {
+    const records = loadRecords();
+    const idx = records.findIndex(r => r.id === id);
+    if (idx === -1) return false;
+    records[idx] = { ...records[idx], ...updatedFields };
+    saveAllRecords(records);
+    return true;
+  }
+
+  // 删除记录
+  function deleteRecordById(id) {
+    let records = loadRecords();
+    const newList = records.filter(r => r.id !== id);
+    if (newList.length === records.length) return false;
+    saveAllRecords(newList);
+    return true;
+  }
+
+  // 清除全部
+  function clearAllRecords() {
+    if (confirm("⚠️ 确认删除「所有」旅行资金记录？无法复原。")) {
+      localStorage.removeItem(STORAGE_KEY);
+      refreshUI();
+    }
+  }
+
+  // 重新计算某条记录的 totalBudget (如有需求)
+  function recalcRecordBudget(id) {
+    const records = loadRecords();
+    const rec = records.find(r => r.id === id);
+    if (!rec) return;
+    const newTotal = computeTotalBudget(rec.days, rec.dailyCost, rec.extraCost);
+    updateRecordById(id, { totalBudget: newTotal });
+    refreshUI();
+  }
+
+  // ------------------------------ 筛选 / 排序 / 搜索核心逻辑 --------------------------
+  function getFilterSortConfig() {
+    const status = document.getElementById("statusFilter").value; // 'all', 'active', 'done'
+    const keyword = document.getElementById("searchInput").value.trim().toLowerCase();
+    const sortMode = document.getElementById("sortSelect").value;
+    return { status, keyword, sortMode };
+  }
+
+  // 应用筛选+排序 返回整理后的数组
+  function filterAndSortRecords() {
+    let records = loadRecords();
+    const { status, keyword, sortMode } = getFilterSortConfig();
+
+    // 状态过滤
+    if (status !== "all") {
+      records = records.filter(r => r.status === status);
+    }
+    // 搜索过滤 (destination)
+    if (keyword !== "") {
+      records = records.filter(r => r.destination.toLowerCase().includes(keyword));
+    }
+
+    // 排序
+    if (sortMode === "createdDesc") {
+      records.sort((a,b) => new Date(b.createdAt) - new Date(a.createdAt));
+    } else if (sortMode === "createdAsc") {
+      records.sort((a,b) => new Date(a.createdAt) - new Date(b.createdAt));
+    } else if (sortMode === "budgetDesc") {
+      records.sort((a,b) => (b.totalBudget || 0) - (a.totalBudget || 0));
+    } else if (sortMode === "budgetAsc") {
+      records.sort((a,b) => (a.totalBudget || 0) - (b.totalBudget || 0));
+    }
+    return records;
+  }
+
+  // 获取全局统计 (原始记录)
+  function getGlobalStats() {
+    const all = loadRecords();
+    const active = all.filter(r => r.status === "active").length;
+    const done = all.filter(r => r.status === "done").length;
+    return { total: all.length, active, done };
+  }
+
+  // 渲染列表 + 更新右侧统计摘要
+  function refreshUI() {
+    const filtered = filterAndSortRecords();
+    const currency = document.getElementById("currencySelect").value;
+    const globalStats = getGlobalStats();
+
+    // 更新全局显示总记录数
+    document.getElementById("totalRecordCount").innerHTML = `📌 总记录数: ${globalStats.total}`;
+
+    // 更新右侧统计卡片 (基于筛选后的结果)
+    const displayCount = filtered.length;
+    const displayTotal = filtered.reduce((sum, r) => sum + (r.totalBudget || 0), 0);
+    document.getElementById("displayCount").innerText = displayCount;
+    document.getElementById("displayTotalBudget").innerHTML = `${Math.round(displayTotal).toLocaleString()} ${currency}`;
+    document.getElementById("activeCount").innerText = globalStats.active;
+    document.getElementById("doneCount").innerText = globalStats.done;
+
+    // 渲染卡片列表
+    const container = document.getElementById("tripListContainer");
+    if (!filtered.length) {
+      container.innerHTML = `<div class="empty-state">🌸 没有符合筛选条件的旅行记录，点新增出发吧 🌸</div>`;
+      return;
+    }
+
+    container.innerHTML = filtered.map(record => {
+      const statusClass = record.status === "done" ? "done" : "";
+      const statusLabel = record.status === "done" ? "✅ 已完成" : "✈️ 进行中";
+      const toggleText = record.status === "done" ? "↻ 恢复 active" : "✓ 标记 done";
+
+      return `
+        <div class="trip-card" data-id="${record.id}">
+          <div class="card-header">
+            <div class="dest-name">${escapeHtml(record.destination)}</div>
+            <div class="status-badge ${statusClass}">${statusLabel}</div>
+          </div>
+          <div class="info-grid">
+            <div class="info-item"><div class="info-label">📅 天数</div><div class="info-value">${record.days} 天</div></div>
+            <div class="info-item"><div class="info-label">💸 每日预算</div><div class="info-value">${Number(record.dailyCost).toLocaleString()} ${currency}</div></div>
+            <div class="info-item"><div class="info-label">➕ 额外花费</div><div class="info-value">${Number(record.extraCost).toLocaleString()} ${currency}</div></div>
+            <div class="info-item"><div class="info-label">💰 总预算</div><div class="info-value"><strong>${Number(record.totalBudget).toLocaleString()} ${currency}</strong></div></div>
+          </div>
+          <div class="meta-row" style="font-size:0.7rem; margin: 4px 0 8px; color:#b28b9b;">
+            🕒 建立时间：${formatDate(record.createdAt)} 
+          </div>
+          <div class="card-actions">
+            <button class="small-btn" data-action="toggle" data-id="${record.id}">${toggleText}</button>
+            <button class="small-btn" data-action="recalc" data-id="${record.id}">🔄 重新计算</button>
+            <button class="small-btn btn-danger" data-action="delete" data-id="${record.id}">🗑️ 删除</button>
+          </div>
+        </div>
+      `;
+    }).join("");
+  }
+
+  // 辅助函数 escape & 日期格式化
+  function escapeHtml(str) {
+    if (!str) return '';
+    return str.replace(/[&<>]/g, function(m) {
+      if (m === '&') return '&amp;';
+      if (m === '<') return '&lt;';
+      if (m === '>') return '&gt;';
+      return m;
+    }).replace(/[\uD800-\uDBFF][\uDC00-\uDFFF]/g, function(c) {
+      return c;
+    });
+  }
+
+  function formatDate(isoString) {
+    if (!isoString) return "未知";
+    try {
+      const d = new Date(isoString);
+      return `${d.getFullYear()}/${d.getMonth()+1}/${d.getDate()} ${d.getHours().toString().padStart(2,'0')}:${d.getMinutes().toString().padStart(2,'0')}`;
+    } catch(e) { return isoString; }
+  }
+
+  // ------------------------------ 处理新增 (含前端验证) ---------------------------------
+  function onCreate() {
+    const newRecord = buildRecordFromInput();
+    if (!newRecord) return;   // 验证失败
+    addNewRecord(newRecord);
+    // 清空表单（保留币别）
+    document.getElementById("destinationInput").value = "";
+    document.getElementById("daysInput").value = "";
+    document.getElementById("dailyCostInput").value = "";
+    document.getElementById("extraCostInput").value = "0";
+    refreshUI();
+  }
+
+  // 处理卡片事件 (toggle, delete, recalc)
+  function handleCardActions(e) {
+    const btn = e.target.closest("[data-action]");
+    if (!btn) return;
+    const action = btn.getAttribute("data-action");
+    const id = btn.getAttribute("data-id");
+    if (!id) return;
+
+    if (action === "delete") {
+      if (confirm("确定删除此笔记录吗？")) {
+        deleteRecordById(id);
+        refreshUI();
+      }
+    } else if (action === "toggle") {
+      const records = loadRecords();
+      const target = records.find(r => r.id === id);
+      if (target) {
+        const newStatus = target.status === "active" ? "done" : "active";
+        updateRecordById(id, { status: newStatus });
+        refreshUI();
+      }
+    } else if (action === "recalc") {
+      recalcRecordBudget(id);
+    }
+  }
+
+  // 监听筛选、搜索变化自动刷新
+  function bindFilterEvents() {
+    document.getElementById("statusFilter").addEventListener("change", () => refreshUI());
+    document.getElementById("sortSelect").addEventListener("change", () => refreshUI());
+    document.getElementById("searchInput").addEventListener("input", () => refreshUI());
+    document.getElementById("currencySelect").addEventListener("change", () => refreshUI()); // 币别变动重新渲染
+  }
+
+  // 初始化
+  function init() {
+    bindFilterEvents();
+    document.getElementById("createBtn").addEventListener("click", onCreate);
+    document.getElementById("clearAllBtn").addEventListener("click", clearAllRecords);
+    document.getElementById("tripListContainer").addEventListener("click", handleCardActions);
+    refreshUI();
+  }
+
+  init();
+</script>
+</body>
+</html>

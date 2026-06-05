@@ -1,0 +1,106 @@
+// ==================== Apps Script 后端代码 ====================
+// 请粘贴到 Google Apps Script 编辑器，然后部署为网页应用
+
+const SHEET_NAME = "Sheet1";
+
+function doGet(e) {
+  try {
+    const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(SHEET_NAME);
+    const data = sheet.getDataRange().getValues();
+    const headers = data[0];
+    const records = [];
+    
+    for (let i = 1; i < data.length; i++) {
+      const row = data[i];
+      const record = {};
+      headers.forEach((header, idx) => {
+        record[header] = row[idx];
+      });
+      records.push(record);
+    }
+    
+    return ContentService.createTextOutput(JSON.stringify({
+      ok: true,
+      records: records
+    })).setMimeType(ContentService.MimeType.JSON);
+    
+  } catch(e) {
+    return ContentService.createTextOutput(JSON.stringify({
+      ok: false,
+      error: e.toString()
+    })).setMimeType(ContentService.MimeType.JSON);
+  }
+}
+
+function doPost(e) {
+  try {
+    const data = JSON.parse(e.postData.contents);
+    const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(SHEET_NAME);
+    const action = data.action;
+    const record = data.record;
+    
+    if (action === "create") {
+      // 新增记录
+      const row = [
+        record.id,
+        record.createdAt,
+        record.status,
+        record.destination,
+        record.days,
+        record.dailyCost,
+        record.extraCost,
+        record.totalBudget
+      ];
+      sheet.appendRow(row);
+      
+    } else if (action === "update") {
+      // 更新记录 (根据 id 查找并更新)
+      const id = record.id;
+      const dataRange = sheet.getDataRange().getValues();
+      const headers = dataRange[0];
+      let idCol = -1;
+      for (let i = 0; i < headers.length; i++) {
+        if (headers[i] === "id") idCol = i;
+      }
+      
+      for (let i = 1; i < dataRange.length; i++) {
+        if (dataRange[i][idCol] === id) {
+          // 更新 status 字段
+          const statusCol = headers.indexOf("status");
+          if (statusCol !== -1 && record.status) {
+            sheet.getRange(i+1, statusCol+1).setValue(record.status);
+          }
+          break;
+        }
+      }
+      
+    } else if (action === "delete") {
+      // 删除记录
+      const id = record.id;
+      const dataRange = sheet.getDataRange().getValues();
+      const headers = dataRange[0];
+      let idCol = -1;
+      for (let i = 0; i < headers.length; i++) {
+        if (headers[i] === "id") idCol = i;
+      }
+      
+      for (let i = 1; i < dataRange.length; i++) {
+        if (dataRange[i][idCol] === id) {
+          sheet.deleteRow(i+1);
+          break;
+        }
+      }
+    }
+    
+    return ContentService.createTextOutput(JSON.stringify({
+      ok: true,
+      message: "success"
+    })).setMimeType(ContentService.MimeType.JSON);
+    
+  } catch(e) {
+    return ContentService.createTextOutput(JSON.stringify({
+      ok: false,
+      error: e.toString()
+    })).setMimeType(ContentService.MimeType.JSON);
+  }
+}

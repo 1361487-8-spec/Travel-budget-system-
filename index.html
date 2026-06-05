@@ -418,14 +418,11 @@ padding: 1rem;
 <div class="empty-state">✨ 暂无旅行资金记录，请新增一笔 ✨</div>
 </div>
 <div class="footer-tip">
-💾 资料储存在 Google Sheet & 本地快取 · 完全前端验证 · 支援搜索/筛选/排序/统计
+💾 资料安全儲存在瀏覽器 LocalStorage · 完全前端運作 · 支援搜索/篩選/排序/統計
 </div>
 </div>
 <script>
-// ------------------------------ 后端连接配置 ---------------------------------
-const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyClxroFO9WqHCPMMPS4Gq4x6iTgM8st6hIM9BrkrcUInca1Zk547Y_HNB9Y2FticeZ/exec";
-
-// ------------------------------ 存储KEY 及 辅助函数 ---------------------------------
+// ==================== 100% 絕對無後端純前端極速版 ====================
 const STORAGE_KEY = "travel_records_system";
 const clamp = (val) => (isNaN(val) || val < 0 ? 0 : Number(val));
 const toNumber = (val) => {
@@ -434,50 +431,6 @@ return isNaN(n) ? null : n;
 };
 function computeTotalBudget(days, dailyCost, extraCost) {
 return clamp(days) * clamp(dailyCost) + clamp(extraCost);
-}
-
-// ------------------------------ Google Sheet 同步核心 --------------------------
-async function syncToSheet(payload) {
-try {
-await fetch(APPS_SCRIPT_URL, {
-method: "POST",
-headers: { "Content-Type": "text/plain" },
-body: JSON.stringify(payload)
-});
-} catch (e) {
-console.error("同步到 Google Sheet 失败:", e);
-}
-}
-
-async function fetchRecordsFromSheet() {
-// 使用 AbortController 防止 fetch 無期限卡死
-const controller = new AbortController();
-const timeoutId = setTimeout(() => controller.abort(), 4000); 
-try {
-const response = await fetch(APPS_SCRIPT_URL, { signal: controller.signal });
-clearTimeout(timeoutId);
-const data = await response.json();
-if (data && data.ok && Array.isArray(data.records)) {
-return data.records.map(normalizeRecord);
-}
-throw new Error("格式错误");
-} catch (err) {
-clearTimeout(timeoutId);
-throw err;
-}
-}
-
-function normalizeRecord(record) {
-return {
-id: String(record["流水号 / ID"] || ""),
-createdAt: String(record["建立时间"] || ""),
-status: String(record["状态"] || "active"),
-destination: String(record["目的地"] || ""),
-days: Number(record["天数"] || 0),
-dailyCost: Number(record["每日预算"] || 0),
-extraCost: Number(record["额外花费"] || 0),
-totalBudget: Number(record["总预算"] || 0)
-};
 }
 
 function buildRecordFromInput() {
@@ -501,7 +454,7 @@ return null;
 }
 const extraCost = extraRaw === "" ? 0 : (toNumber(extraRaw) || 0);
 return {
-id: crypto.randomUUID ? crypto.randomUUID() : Date.now() + "-" + Math.random().toString(36),
+id: "id-" + Date.now() + "-" + Math.floor(Math.random() * 1000),
 createdAt: new Date().toISOString(),
 status: "active",
 destination: destination,
@@ -546,13 +499,6 @@ localStorage.removeItem(STORAGE_KEY);
 refreshUI();
 }
 }
-function recalcRecordBudget(id) {
-const records = loadRecords();
-const rec = records.find(r => r.id === id);
-if (!rec) return;
-updateRecordById(id, { totalBudget: computeTotalBudget(rec.days, rec.dailyCost, rec.extraCost) });
-refreshUI();
-}
 function getFilterSortConfig() {
 return {
 status: document.getElementById("statusFilter").value,
@@ -576,8 +522,8 @@ const all = loadRecords();
 return { total: all.length, active: all.filter(r => r.status === "active").length, done: all.filter(r => r.status === "done").length };
 }
 function refreshUI() {
-// 確保 DOM 載入完整才執行
-if (!document.getElementById("tripListContainer")) return;
+const container = document.getElementById("tripListContainer");
+if (!container) return;
 const filtered = filterAndSortRecords();
 const currency = document.getElementById("currencySelect").value;
 const globalStats = getGlobalStats();
@@ -586,7 +532,6 @@ document.getElementById("displayCount").innerText = filtered.length;
 document.getElementById("displayTotalBudget").innerHTML = `${Math.round(filtered.reduce((sum, r) => sum + r.totalBudget, 0)).toLocaleString()} ${currency}`;
 document.getElementById("activeCount").innerText = globalStats.active;
 document.getElementById("doneCount").innerText = globalStats.done;
-const container = document.getElementById("tripListContainer");
 if (!filtered.length) {
 container.innerHTML = `<div class="empty-state">🌸 沒有符合篩選條件的記錄，點新增出發吧 🌸</div>`;
 return;
@@ -623,7 +568,6 @@ document.getElementById("daysInput").value = "";
 document.getElementById("dailyCostInput").value = "";
 document.getElementById("extraCostInput").value = "0";
 refreshUI();
-syncToSheet({ action: "create", record: newRecord });
 }
 function handleCardActions(e) {
 const btn = e.target.closest("[data-action]");
@@ -638,10 +582,8 @@ refreshUI();
 const records = loadRecords();
 const target = records.find(r => r.id === id);
 if (target) {
-const newStatus = target.status === "active" ? "done" : "active";
-updateRecordById(id, { status: newStatus });
+updateRecordById(id, { status: target.status === "active" ? "done" : "active" });
 refreshUI();
-syncToSheet({ action: "update", id: id, changes: { status: newStatus } });
 }
 }
 }
@@ -652,33 +594,15 @@ document.getElementById("searchInput").addEventListener("input", refreshUI);
 document.getElementById("currencySelect").addEventListener("change", refreshUI);
 }
 
-// 🔥 核心修正防卡死機制
 function init() {
 bindFilterEvents();
 document.getElementById("createBtn").addEventListener("click", onCreate);
 document.getElementById("clearAllBtn").addEventListener("click", clearAllRecords);
 document.getElementById("tripListContainer").addEventListener("click", handleCardActions);
-
-// 【關鍵修改】：不管網頁有沒有聯網，一開啟先強制用本地資料渲染畫面！
-refreshUI();
-
-// 渲染完後，才悄悄在背景向 Google 連線，就算失敗也不會阻塞 UI 顯示
-fetchRecordsFromSheet().then(remoteRecords => {
-if (remoteRecords && remoteRecords.length > 0) {
-saveAllRecords(remoteRecords);
 refreshUI();
 }
-}).catch(err => {
-console.warn("背景同步 Google Sheet 中斷，目前完全使用本地快取運作：", err);
-});
-}
 
-// 確保 DOM 樹載入完畢才執行
-if (document.readyState === "loading") {
-document.addEventListener("DOMContentLoaded", init);
-} else {
-init();
-}
+window.addEventListener("DOMContentLoaded", init);
 </script>
 </body>
 </html>
